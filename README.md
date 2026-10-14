@@ -20,7 +20,8 @@ Um jogo 3D de reflexos com cara de Brasil! Escolha seu porco trabalhador, desvie
 1. Abra o `index.html` com dois cliques no Chrome, Edge ou outro navegador com suporte a WebGL. Não precisa de servidor nem de instalação.
 2. Escolha o personagem pelas setas e clique em **DECOLAR AGORA**.
 3. Use **Espaço**, **seta para cima**, **clique** ou **toque na tela** para bater as asas.
-4. Passe entre os canos, evite o chão e o limite superior e supere seu recorde!
+4. Aperte **H** durante o jogo para ver a hitbox do porco (círculo vermelho).
+5. Passe entre os canos, evite o chão e o limite superior e supere seu recorde!
 
 ## ✨ O que tem no jogo
 
@@ -56,3 +57,5 @@ src/
 ```
 
 A ordem das tags `<script>` no `index.html` importa: cada arquivo depende dos anteriores.
+
+As fontes (Lilita One e Baloo 2) vêm do Google Fonts; sem internet o jogo usa fontes do sistema, com visual um pouco diferente.

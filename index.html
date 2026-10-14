@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Voa Porco da Silva - Edição Brasil 3D</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Lilita+One&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles/base.css">
     <link rel="stylesheet" href="styles/buttons.css">
     <link rel="stylesheet" href="styles/hud.css">
@@ -14,6 +17,8 @@
 
     <div id="canvas-container"></div>
 
+    <div class="bunting" aria-hidden="true"></div>
+
     <div class="ui-layer">
         <!-- Placar durante o jogo -->
         <div id="hud">
@@ -23,8 +28,8 @@
 
         <!-- Menu Principal -->
         <div id="main-menu">
-            <div class="edition-tag">EDIÇÃO BRASIL • 3D</div>
-            <div class="game-title">VOA PORCO<span>DA SILVA</span></div>
+            <div class="edition-tag">EDIÇÃO BRASIL ★ 3D</div>
+            <div class="game-title">VOA PORCO <span>DA SILVA</span></div>
             <div class="game-subtitle">Um trabalhador, duas asinhas e um céu inteiro de desafios. Escolha seu parceiro de voo!</div>
 
             <div class="char-selector">
@@ -45,6 +50,7 @@
 
         <!-- Tela de Game Over -->
         <div id="game-over">
+            <div class="red-card" aria-hidden="true"></div>
             <div class="go-title">DEU RUIM, PARCEIRO!</div>
             <p class="go-phrase" id="go-phrase">Bateu direto no andaime da obra!</p>
             <div class="go-stats">

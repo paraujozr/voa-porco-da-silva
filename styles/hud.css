@@ -6,45 +6,57 @@
     max-width: 900px;
 }
 
+/* Placares estilo plaquinha de estádio */
 .score-box {
-    background: rgba(0, 156, 59, 0.9);
-    border: 4px solid #ffdf00;
+    background: var(--verde);
+    border: var(--contorno);
     color: #fff;
-    padding: 10px 25px;
-    border-radius: 50px;
-    font-family: 'Arial Rounded MT Bold', 'Arial Black', sans-serif;
-    font-size: 28px;
-    text-shadow: 2px 2px 0px #002776;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+    padding: 6px 22px 8px;
+    border-radius: 16px;
+    font-family: var(--font-display);
+    font-size: 26px;
+    letter-spacing: 1px;
+    -webkit-text-stroke: 5px var(--azul);
+    paint-order: stroke fill;
+    box-shadow: 4px 5px 0 var(--azul);
+    transform: rotate(-2deg);
 }
 
 .score-box--best {
-    background: rgba(0, 39, 118, 0.9);
+    background: var(--amarelo);
+    color: var(--amarelo);
+    transform: rotate(2deg);
 }
 
 .hint-bar {
     position: absolute;
-    bottom: 20px;
+    bottom: 18px;
     max-width: 92%;
     text-align: center;
-    color: white;
-    background: #032c4566;
-    border: 1px solid #ffffff24;
-    padding: 10px 20px;
-    border-radius: 30px;
-    font-size: 12px;
-    line-height: 1.5;
+    color: var(--azul);
+    background: var(--creme);
+    border: 3px solid var(--azul);
+    box-shadow: 3px 4px 0 var(--azul);
+    padding: 6px 18px;
+    border-radius: 14px;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.hint-bar strong {
+    color: var(--verde-escuro);
 }
 
 @media (max-width: 680px) {
     .score-box {
-        font-size: 15px;
-        padding: 8px 12px;
+        font-size: 17px;
+        padding: 4px 12px 6px;
+        -webkit-text-stroke-width: 4px;
     }
 
     .hint-bar {
         bottom: 10px;
-        font-size: 10px;
-        padding: 6px 12px;
+        font-size: 11px;
+        padding: 4px 10px;
     }
 }

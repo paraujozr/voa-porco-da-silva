@@ -8,13 +8,17 @@
         jumpStrength: 9.2,
         startY: 2.0,
         floorY: -5.2,
-        ceilingY: 11.5,
+        // Topo visível da tela (o porco encosta e é segurado, não morre)
+        ceilingY: 6.2,
     };
 
     const PIG = {
         x: -2.5,
-        collisionRadius: 0.85,
-        hitWidth: 1.85,
+        // Hitbox: círculo menor que o porco desenhado (corpo e cabeça, sem focinho,
+        // orelhas, pernas ou acessórios), relativo ao centro do modelo.
+        hitRadius: 0.75,
+        hitOffsetX: 0.1,
+        hitOffsetY: 0.05,
     };
 
     const OBSTACLES = {
@@ -25,6 +29,9 @@
         spawnInterval: 1.85,
         firstSpawnDelay: 1.6,
         pipeHeight: 14,
+        pipeRadius: 1.15,
+        capRadius: 1.32,
+        capHeight: 0.55,
     };
 
     const GAME_STATES = {

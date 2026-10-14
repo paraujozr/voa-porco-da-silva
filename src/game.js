@@ -22,7 +22,29 @@
         let pigY = 0;
         let pigVelocity = 0;
 
-        const currentCharacter = () => CHARACTERS[characterIndex];
+        // Criado uma vez só, para não gerar lixo a cada frame.
+    const obstacleCallbacks = {
+        onCollide: () => gameOver(),
+        onPass: () => addPoint(),
+        isPlaying: () => state === PLAYING,
+    };
+
+    // Tecla H liga/desliga a visualização da hitbox (para ajustar a jogabilidade).
+    const hitboxDebug = new THREE.Mesh(
+        new THREE.CircleGeometry(PIG.hitRadius, 32),
+        new THREE.MeshBasicMaterial({ color: 0xff0000, transparent: true, opacity: 0.4, depthTest: false })
+    );
+    hitboxDebug.visible = false;
+    hitboxDebug.renderOrder = 10;
+    hitboxDebug.position.z = 2;
+    world.scene.add(hitboxDebug);
+
+    function updateHitboxDebug() {
+        hitboxDebug.position.x = PIG.x + PIG.hitOffsetX;
+        hitboxDebug.position.y = pigY + PIG.hitOffsetY;
+    }
+
+    const currentCharacter = () => CHARACTERS[characterIndex];
 
         // ---------- Ações ----------
         function selectCharacter(delta) {
@@ -105,13 +127,16 @@
             pig.group.rotation.y = 0;
             pig.group.rotation.z = THREE.MathUtils.clamp(pigVelocity * 0.06, -0.7, 0.55);
 
-            if (pigY < PHYSICS.floorY || pigY > PHYSICS.ceilingY) gameOver();
+            // Encostar no topo da tela não mata: o porco só é segurado ali.
+            if (pigY > PHYSICS.ceilingY) {
+                pigY = PHYSICS.ceilingY;
+                pigVelocity = Math.min(pigVelocity, 0);
+                pig.group.position.y = pigY;
+            }
+            if (pigY < PHYSICS.floorY) gameOver();
 
-            obstacles.update(dt, pigY, {
-                onCollide: gameOver,
-                onPass: addPoint,
-                isPlaying: () => state === PLAYING,
-            });
+            obstacles.update(dt, pigY, obstacleCallbacks);
+            updateHitboxDebug();
         }
 
         function updateGameOver(dt) {
@@ -150,6 +175,7 @@
             ui.on.backToMenu(backToMenu);
 
             window.addEventListener('keydown', (e) => {
+            if (e.code === 'KeyH' && !e.repeat) hitboxDebug.visible = !hitboxDebug.visible;
                 if (e.code === 'Space' || e.code === 'ArrowUp') {
                     e.preventDefault();
                     if (!e.repeat) flap();

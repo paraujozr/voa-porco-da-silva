@@ -4,58 +4,96 @@
     const { createPipeTexture } = Voa.textures;
     const { OBSTACLES, PIG } = Voa.constants;
 
+    const POOL_SIZE = 5;
+    const GAP_RANGE = 5.2;
+    const GAP_OFFSET = 1.2;
+
+    // Círculo (hitbox do porco) contra retângulo (cano ou boca do cano).
+    function circleHitsRect(cx, cy, r, minX, maxX, minY, maxY) {
+        const nearestX = Math.max(minX, Math.min(cx, maxX));
+        const nearestY = Math.max(minY, Math.min(cy, maxY));
+        const dx = cx - nearestX;
+        const dy = cy - nearestY;
+        return dx * dx + dy * dy < r * r;
+    }
+
     function createObstacleField(scene) {
-        const items = [];
+        const active = [];
+        const pool = [];
         let spawnTimer = 0;
 
-        const pipeMat = new THREE.MeshStandardMaterial({
-            map: createPipeTexture(),
-            roughness: 0.35,
-            metalness: 0.25,
-        });
-        const capMat = new THREE.MeshStandardMaterial({ color: 0xffdf00, roughness: 0.3, metalness: 0.2 });
+        // Geometrias e materiais únicos, compartilhados por todos os canos.
+        const pipeGeo = new THREE.CylinderGeometry(OBSTACLES.pipeRadius, OBSTACLES.pipeRadius, OBSTACLES.pipeHeight, 20);
+        const capGeo = new THREE.CylinderGeometry(OBSTACLES.capRadius, OBSTACLES.capRadius, OBSTACLES.capHeight, 20);
+        const pipeMat = new THREE.MeshLambertMaterial({ map: createPipeTexture() });
+        const capMat = new THREE.MeshLambertMaterial({ color: 0xffdf00 });
 
-        function buildPipe(centerY, capY) {
-            const pipe = new THREE.Mesh(
-                new THREE.CylinderGeometry(1.15, 1.15, OBSTACLES.pipeHeight, 24),
-                pipeMat
-            );
-            pipe.position.y = centerY;
-            pipe.castShadow = true;
-            pipe.receiveShadow = true;
-
-            const cap = new THREE.Mesh(new THREE.CylinderGeometry(1.32, 1.32, 0.55, 24), capMat);
-            cap.position.y = capY;
-            cap.castShadow = true;
-            return [pipe, cap];
+        // Par de canos reaproveitável: [cano de baixo, boca de baixo, cano de cima, boca de cima]
+        function createPair() {
+            const group = new THREE.Group();
+            const parts = {
+                bottomPipe: new THREE.Mesh(pipeGeo, pipeMat),
+                bottomCap: new THREE.Mesh(capGeo, capMat),
+                topPipe: new THREE.Mesh(pipeGeo, pipeMat),
+                topCap: new THREE.Mesh(capGeo, capMat),
+            };
+            group.add(parts.bottomPipe, parts.bottomCap, parts.topPipe, parts.topCap);
+            group.visible = false;
+            scene.add(group);
+            return { group, parts, gapCenter: 0, bottomEdge: 0, topEdge: 0, passed: false };
         }
 
+        for (let i = 0; i < POOL_SIZE; i++) pool.push(createPair());
+
         function spawn() {
-            const { gapSize, pipeHeight } = OBSTACLES;
-            const gapCenter = (Math.random() - 0.5) * 5.2 + 1.2;
+            const pair = pool.pop() || createPair();
+            const { gapSize, pipeHeight, capHeight } = OBSTACLES;
 
-            const group = new THREE.Group();
-            group.position.x = OBSTACLES.spawnX;
+            pair.gapCenter = (Math.random() - 0.5) * GAP_RANGE + GAP_OFFSET;
+            pair.bottomEdge = pair.gapCenter - gapSize / 2;
+            pair.topEdge = pair.gapCenter + gapSize / 2;
+            pair.passed = false;
 
-            const bottomEdge = gapCenter - gapSize / 2;
-            const topEdge = gapCenter + gapSize / 2;
-            group.add(
-                ...buildPipe(bottomEdge - pipeHeight / 2, bottomEdge - 0.27),
-                ...buildPipe(topEdge + pipeHeight / 2, topEdge + 0.27)
-            );
+            pair.parts.bottomPipe.position.y = pair.bottomEdge - pipeHeight / 2;
+            pair.parts.bottomCap.position.y = pair.bottomEdge - capHeight / 2;
+            pair.parts.topPipe.position.y = pair.topEdge + pipeHeight / 2;
+            pair.parts.topCap.position.y = pair.topEdge + capHeight / 2;
 
-            scene.add(group);
-            items.push({ group, gapCenter, gapSize, passed: false });
+            pair.group.position.x = OBSTACLES.spawnX;
+            pair.group.visible = true;
+            active.push(pair);
+        }
+
+        function release(index) {
+            const [pair] = active.splice(index, 1);
+            pair.group.visible = false;
+            pool.push(pair);
         }
 
         function clear() {
-            for (const obs of items) scene.remove(obs.group);
-            items.length = 0;
+            while (active.length) release(active.length - 1);
         }
 
         function reset() {
             clear();
             spawnTimer = OBSTACLES.firstSpawnDelay;
+        }
+
+        function collides(pair, pigY) {
+            const { pipeRadius, capRadius, capHeight, pipeHeight } = OBSTACLES;
+            const cx = PIG.x + PIG.hitOffsetX;
+            const cy = pigY + PIG.hitOffsetY;
+            const r = PIG.hitRadius;
+            const x = pair.group.position.x;
+
+            if (Math.abs(x - cx) > capRadius + r) return false;
+
+            return (
+                circleHitsRect(cx, cy, r, x - pipeRadius, x + pipeRadius, pair.bottomEdge - pipeHeight, pair.bottomEdge) ||
+                circleHitsRect(cx, cy, r, x - capRadius, x + capRadius, pair.bottomEdge - capHeight, pair.bottomEdge) ||
+                circleHitsRect(cx, cy, r, x - pipeRadius, x + pipeRadius, pair.topEdge, pair.topEdge + pipeHeight) ||
+                circleHitsRect(cx, cy, r, x - capRadius, x + capRadius, pair.topEdge, pair.topEdge + capHeight)
+            );
         }
 
         /**
@@ -69,26 +107,18 @@
                 spawn();
             }
 
-            for (let i = items.length - 1; i >= 0; i--) {
-                const obs = items[i];
-                obs.group.position.x -= OBSTACLES.speed * dt;
+            for (let i = active.length - 1; i >= 0; i--) {
+                const pair = active[i];
+                pair.group.position.x -= OBSTACLES.speed * dt;
 
-                const dx = Math.abs(obs.group.position.x - PIG.x);
-                if (dx < PIG.hitWidth) {
-                    const topLimit = obs.gapCenter + obs.gapSize / 2 - PIG.collisionRadius;
-                    const bottomLimit = obs.gapCenter - obs.gapSize / 2 + PIG.collisionRadius;
-                    if (pigY > topLimit || pigY < bottomLimit) onCollide();
-                }
+                if (collides(pair, pigY)) onCollide();
 
-                if (isPlaying() && !obs.passed && obs.group.position.x < PIG.x) {
-                    obs.passed = true;
+                if (isPlaying() && !pair.passed && pair.group.position.x < PIG.x) {
+                    pair.passed = true;
                     onPass();
                 }
 
-                if (obs.group.position.x < OBSTACLES.despawnX) {
-                    scene.remove(obs.group);
-                    items.splice(i, 1);
-                }
+                if (pair.group.position.x < OBSTACLES.despawnX) release(i);
             }
         }
 
