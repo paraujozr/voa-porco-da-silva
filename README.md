@@ -4,6 +4,10 @@
 
 Um jogo 3D de reflexos com cara de Brasil! Escolha seu porco trabalhador, desvie dos canos e tente bater seu próprio recorde. Entre capacetes de obra, camisas de futebol e mochilas de delivery, cada voo vira uma nova história.
 
+## 🚀 Jogue agora
+
+**[Abrir Voa Porco da Silva](https://paraujozr.github.io/voa-porco-da-silva/)**
+
 ## 🇧🇷 Escolha seu parceiro de voo
 
 - **Zé da Obra** — capacete amarelo e colete refletivo para encarar qualquer desafio.
