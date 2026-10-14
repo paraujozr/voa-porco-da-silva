@@ -30,20 +30,6 @@
     border-top: 0;
 }
 
-.edition-tag {
-    display: inline-block;
-    padding: 4px 14px 5px;
-    background: var(--verde);
-    color: #fff;
-    border: 3px solid var(--azul);
-    border-radius: 30px;
-    font-family: var(--font-display);
-    font-size: 13px;
-    letter-spacing: 2px;
-    margin-bottom: 12px;
-    transform: rotate(-2deg);
-}
-
 .game-title {
     font-family: var(--font-display);
     font-size: clamp(40px, 5vw, 66px);
@@ -195,21 +181,10 @@ body:not(.menu-open) .hero-label {
         box-shadow: 6px 7px 0 var(--azul);
     }
 
-    .edition-tag {
-        font-size: 11px;
-        padding: 2px 10px 3px;
-        margin-bottom: 6px;
-    }
-
     .game-title {
         font-size: 32px;
         -webkit-text-stroke-width: 6px;
         margin-bottom: 24px;
-    }
-
-    .game-title span {
-        display: inline;
-        font-size: 1em;
     }
 
     .game-subtitle,

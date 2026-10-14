@@ -2,9 +2,10 @@
     'use strict';
 
     const { createPipeTexture } = Voa.textures;
-    const { OBSTACLES, PIG } = Voa.constants;
+    const { OBSTACLES, PIG, RENDER_ORDER } = Voa.constants;
 
     const POOL_SIZE = 5;
+    const PIPE_TEXTURE_REPEATS = 4;
     const GAP_RANGE = 5.2;
     const GAP_OFFSET = 1.2;
 
@@ -25,8 +26,14 @@
         // Geometrias e materiais únicos, compartilhados por todos os canos.
         const pipeGeo = new THREE.CylinderGeometry(OBSTACLES.pipeRadius, OBSTACLES.pipeRadius, OBSTACLES.pipeHeight, 20);
         const capGeo = new THREE.CylinderGeometry(OBSTACLES.capRadius, OBSTACLES.capRadius, OBSTACLES.capHeight, 20);
-        const pipeMat = new THREE.MeshLambertMaterial({ map: createPipeTexture() });
-        const capMat = new THREE.MeshLambertMaterial({ color: 0xffdf00 });
+        // Os canos são desenhados por cima do cenário (sem teste de profundidade), para que
+        // atravessem a tela inteira em vez de "morrer" no chão que fica à frente deles.
+        // A textura se repete na vertical (número inteiro de vezes) para as listras não esticarem.
+        const pipeTexture = createPipeTexture();
+        pipeTexture.wrapT = THREE.RepeatWrapping;
+        pipeTexture.repeat.set(1, PIPE_TEXTURE_REPEATS);
+        const pipeMat = new THREE.MeshLambertMaterial({ map: pipeTexture, depthTest: false, depthWrite: false });
+        const capMat = new THREE.MeshLambertMaterial({ color: 0xffdf00, depthTest: false, depthWrite: false });
 
         // Par de canos reaproveitável: [cano de baixo, boca de baixo, cano de cima, boca de cima]
         function createPair() {
@@ -37,6 +44,8 @@
                 topPipe: new THREE.Mesh(pipeGeo, pipeMat),
                 topCap: new THREE.Mesh(capGeo, capMat),
             };
+            parts.bottomPipe.renderOrder = parts.topPipe.renderOrder = RENDER_ORDER.pipe;
+            parts.bottomCap.renderOrder = parts.topCap.renderOrder = RENDER_ORDER.cap;
             group.add(parts.bottomPipe, parts.bottomCap, parts.topPipe, parts.topCap);
             group.visible = false;
             scene.add(group);

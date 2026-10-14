@@ -28,11 +28,14 @@
         speed: 7.8,
         spawnInterval: 1.85,
         firstSpawnDelay: 1.6,
-        pipeHeight: 14,
+        pipeHeight: 60, // longo o bastante para cobrir qualquer tela, inclusive muito altas
         pipeRadius: 1.15,
         capRadius: 1.32,
         capHeight: 0.55,
     };
+
+    // Ordem de desenho: cenário (0) -> canos -> bocas dos canos -> porco por cima de tudo.
+    const RENDER_ORDER = { pipe: 1, cap: 2, pig: 3 };
 
     const GAME_STATES = {
         MENU: 'MENU',
@@ -42,5 +45,5 @@
 
     const COMPACT_MENU_WIDTH = 680;
 
-    Voa.constants = {STORAGE_KEY, PHYSICS, PIG, OBSTACLES, GAME_STATES, COMPACT_MENU_WIDTH};
+    Voa.constants = {STORAGE_KEY, PHYSICS, PIG, OBSTACLES, GAME_STATES, RENDER_ORDER, COMPACT_MENU_WIDTH};
 })(window.Voa = window.Voa || {});

@@ -22,7 +22,17 @@
     padding: 0;
 }
 
+html {
+    /* Sem zoom por pinça/toque duplo, sem "puxar para atualizar" e sem rolagem elástica */
+    touch-action: none;
+    overscroll-behavior: none;
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+}
+
 body {
+    touch-action: none;
+    -webkit-touch-callout: none;
     overflow: hidden;
     background-color: #38bdf8;
     font-family: var(--font-body);

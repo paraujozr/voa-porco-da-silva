@@ -39,6 +39,11 @@
             backToMenu: (fn) => onButton(el.menuBtn, fn),
         },
 
+        // Topo do painel do menu, em px (usado para enquadrar o porco no mobile).
+        menuTop() {
+            return el.mainMenu.getBoundingClientRect().top;
+        },
+
         setBest(value) {
             el.bestVal.innerText = value;
         },

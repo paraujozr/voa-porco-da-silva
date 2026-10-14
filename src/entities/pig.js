@@ -1,6 +1,8 @@
 (function (Voa) {
     'use strict';
 
+    const { RENDER_ORDER } = Voa.constants;
+
     // O porco olha para +x. A cabeça é uma esfera própria, encaixada à frente do corpo.
     const HEAD = { x: 0.8, y: 0.3, r: 0.8 };
     const BODY = { x: 1.34, yz: 1.05 };
@@ -242,6 +244,11 @@
                 }
             }
             group.add(accessories);
+
+            // Desenhado depois dos canos, que ignoram a profundidade.
+            group.traverse((obj) => {
+                obj.renderOrder = RENDER_ORDER.pig;
+            });
         }
 
         function flapWings(elapsed, speed) {
