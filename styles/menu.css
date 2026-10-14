@@ -1,0 +1,226 @@
+/* Tela de seleção: painel à esquerda, personagem 3D à direita. */
+#main-menu {
+    position: absolute;
+    left: 5vw;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 42vw;
+    max-width: 510px;
+    margin: 0;
+    padding: clamp(22px, 3vw, 42px);
+    pointer-events: auto;
+    background: linear-gradient(145deg, rgba(7, 58, 73, .95), rgba(5, 35, 58, .95));
+    border: 1px solid rgba(255, 255, 255, .23);
+    border-radius: 32px;
+    text-align: left;
+    color: white;
+    box-shadow: 0 24px 65px #03233355;
+    backdrop-filter: blur(8px);
+}
+
+.edition-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border: 1px solid #ffffff26;
+    border-radius: 30px;
+    color: #a7f3d0;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    margin-bottom: 20px;
+}
+
+.edition-tag::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #ffdf00;
+}
+
+.game-title {
+    font-family: 'Arial Rounded MT Bold', 'Arial Black', sans-serif;
+    font-size: clamp(30px, 4.1vw, 56px);
+    color: #ffdf00;
+    text-shadow: 0 4px 0 #002f39;
+    line-height: .98;
+    letter-spacing: -2px;
+    margin-bottom: 16px;
+}
+
+.game-title span {
+    color: #fff;
+    display: block;
+}
+
+.game-subtitle {
+    font-size: 14px;
+    color: #b4d6de;
+    margin-bottom: 24px;
+    line-height: 1.6;
+    max-width: 340px;
+}
+
+.char-selector {
+    background: #ffffff0a;
+    border: 1px solid #ffffff21;
+    border-radius: 20px;
+    padding: 18px;
+    margin-bottom: 24px;
+}
+
+.char-selector__label {
+    font-size: 13px;
+    color: #a7f3d0;
+    text-transform: uppercase;
+}
+
+.char-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin: 16px 0 12px;
+}
+
+.char-name {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    font-weight: 900;
+    font-size: clamp(16px, 1.8vw, 23px);
+    text-align: center;
+    color: #fff;
+}
+
+.char-desc {
+    font-size: 13px;
+    color: #b4d6de;
+    line-height: 1.5;
+    margin-top: 6px;
+    min-height: 40px;
+}
+
+#start-btn {
+    border: 0;
+    border-radius: 16px;
+    padding: 19px 12px;
+    font-size: 20px;
+    background: linear-gradient(120deg, #ffe25b, #ffca28);
+    box-shadow: 0 5px 0 #bb8b11, 0 12px 24px #0003;
+}
+
+.menu-note {
+    text-align: center;
+    font-size: 11px;
+    color: #a3c0ca;
+    margin-top: 18px;
+    letter-spacing: .5px;
+}
+
+.hero-label {
+    position: absolute;
+    left: 54%;
+    width: 40%;
+    top: 76%;
+    text-align: center;
+    color: #073b52;
+}
+
+.hero-label strong {
+    display: block;
+    font-size: 13px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+}
+
+.hero-label span {
+    display: block;
+    margin-top: 9px;
+    font-size: 13px;
+}
+
+body:not(.menu-open) .hero-label {
+    display: none;
+}
+
+@media (max-width: 680px) {
+    #main-menu {
+        left: 5%;
+        top: auto;
+        bottom: 62px;
+        transform: none;
+        width: 90%;
+        max-width: none;
+        padding: 20px;
+        border-radius: 24px;
+    }
+
+    .edition-tag {
+        margin-bottom: 10px;
+        padding: 5px 9px;
+        font-size: 9px;
+    }
+
+    .game-title {
+        font-size: 30px;
+        letter-spacing: -1px;
+        margin-bottom: 10px;
+    }
+
+    .game-title span {
+        display: inline;
+    }
+
+    .game-subtitle,
+    .menu-note,
+    .hero-label {
+        display: none;
+    }
+
+    .char-selector {
+        padding: 12px;
+        margin-bottom: 14px;
+    }
+
+    .char-controls {
+        margin: 10px 0;
+    }
+
+    .char-desc {
+        min-height: 0;
+        font-size: 12px;
+    }
+
+    #start-btn {
+        padding: 14px;
+        font-size: 18px;
+    }
+}
+
+@media (max-height: 650px) and (min-width: 681px) {
+    #main-menu {
+        padding: 20px 26px;
+    }
+
+    .edition-tag {
+        margin-bottom: 10px;
+    }
+
+    .game-title {
+        font-size: 36px;
+    }
+
+    .game-subtitle {
+        margin-bottom: 12px;
+    }
+
+    .char-selector {
+        padding: 12px;
+        margin-bottom: 14px;
+    }
+
+    .menu-note {
+        display: none;
+    }
+}

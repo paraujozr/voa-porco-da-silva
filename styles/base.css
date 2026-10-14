@@ -1,0 +1,54 @@
+* {
+    box-sizing: border-box;
+    user-select: none;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    overflow: hidden;
+    background-color: #1a1a2e;
+    font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+button:focus-visible {
+    outline: 3px solid white;
+    outline-offset: 5px;
+}
+
+#canvas-container {
+    width: 100vw;
+    height: 100vh;
+    display: block;
+}
+
+/* Camada que sobrepõe o canvas e abriga HUD, menu e game over */
+.ui-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    padding: 28px 4vw;
+    z-index: 2;
+}
+
+/* Degradê lateral que dá contraste ao menu sobre a cena 3D */
+body.menu-open::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(90deg, rgba(3, 35, 53, .84), rgba(3, 35, 53, .35) 43%, transparent 67%);
+}
+
+@media (max-width: 680px) {
+    body.menu-open::after {
+        background: linear-gradient(0deg, #032333cc, transparent 80%);
+    }
+}

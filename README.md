@@ -17,7 +17,7 @@ Um jogo 3D de reflexos com cara de Brasil! Escolha seu porco trabalhador, desvie
 
 ## 🎮 Como jogar
 
-1. Abra `index.html` no Chrome, Edge ou outro navegador com suporte a WebGL.
+1. Abra o `index.html` com dois cliques no Chrome, Edge ou outro navegador com suporte a WebGL. Não precisa de servidor nem de instalação.
 2. Escolha o personagem pelas setas e clique em **DECOLAR AGORA**.
 3. Use **Espaço**, **seta para cima**, **clique** ou **toque na tela** para bater as asas.
 4. Passe entre os canos, evite o chão e o limite superior e supere seu recorde!
@@ -29,10 +29,30 @@ Um jogo 3D de reflexos com cara de Brasil! Escolha seu porco trabalhador, desvie
 - Efeitos sonoros gerados pelo navegador.
 - Recorde salvo no navegador quando o armazenamento local está disponível.
 - Menu com seleção à esquerda e personagem em destaque à direita; disposição adaptada em telas estreitas.
-- Biblioteca gráfica incluída no HTML: não precisa instalar dependências nem ter internet para jogar localmente.
+- Biblioteca gráfica incluída em `vendor/`: não precisa instalar dependências nem ter internet para jogar localmente.
 
 ## 🛠️ Tecnologias
 
 HTML, CSS, JavaScript, Three.js r128 e Web Audio API.
 
-O projeto usa um único `index.html`, sem etapa de compilação. Para hospedagem estática, publique a pasta que contém esse arquivo. O Three.js incluído mantém seu aviso de licença MIT no código.
+Sem etapa de compilação: HTML, CSS e JavaScript puro (scripts clássicos, sem módulos), organizados num namespace único `window.Voa`. Para hospedagem estática, publique a pasta inteira. O Three.js em `vendor/` mantém seu aviso de licença MIT.
+
+## 🗂️ Estrutura
+
+```
+index.html            # apenas a estrutura da página
+styles/               # CSS por componente (base, buttons, hud, menu, game-over)
+vendor/three.min.js   # Three.js r128 (global THREE)
+src/
+  main.js             # ponto de entrada (carregado por último)
+  game.js             # estado, loop e regras do jogo
+  config/             # constantes de física/obstáculos e lista de personagens
+  scene/world.js      # renderer, câmera, luzes, chão e nuvens
+  entities/           # porco (pig.js) e canos (obstacles.js)
+  textures/           # texturas procedurais (canvas)
+  audio/sound.js      # efeitos sonoros (Web Audio API)
+  ui/dom.js           # única camada que acessa o DOM
+  utils/storage.js    # leitura/escrita segura do recorde
+```
+
+A ordem das tags `<script>` no `index.html` importa: cada arquivo depende dos anteriores.
