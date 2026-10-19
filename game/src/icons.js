@@ -18,6 +18,7 @@ const PALETTE = {
   r: '#c93c2c',
   p: '#e67d91',
   P: '#f299a6',
+  t: '#3a7f9c',
 };
 
 export const ICONS = {
@@ -97,6 +98,51 @@ export const ICONS = {
     '.pPkPkPp.',
     '.pPPPPPp.',
     '..ppppp..',
+    'ttttttttt',
+  ],
+  house: [
+    '....r....',
+    '...rrr...',
+    '..rrrrr..',
+    '.rrrrrrr.',
+    'rrrrrrrrr',
+    '.wwwwwww.',
+    '.wwkkkww.',
+    '.wwkkkww.',
+    '.wwkkkww.',
+  ],
+  sun: [
+    '....Y....',
+    '.Y..Y..Y.',
+    '..YYYYY..',
+    '..YYYYY.Y',
+    'YYYYYYYY.',
+    '..YYYYY.Y',
+    '..YYYYY..',
+    '.Y..Y..Y.',
+    '....Y....',
+  ],
+  tower: [
+    '.ww...ww.',
+    '.ww...ww.',
+    '.wb...wb.',
+    '.ww...ww.',
+    '.wb...wb.',
+    '.ww...ww.',
+    '.wb...wb.',
+    'wwwwwwwww',
+    'kkkkkkkkk',
+  ],
+  tree: [
+    '..ggggg..',
+    '.ggGgggg.',
+    'ggggGgggg',
+    'gGgggggGg',
+    '.gggGggg.',
+    '..ggggg..',
+    '....k....',
+    '....k....',
+    '...kkk...',
   ],
   map: [
     'wwwwwwwww',
@@ -155,7 +201,7 @@ export const ICONS = {
 
 const cache = new Map();
 
-function toSvg(id) {
+function toSvg(id, colors = {}) {
   const grid = ICONS[id];
   if (!grid) throw new Error(`Ícone desconhecido: ${id}`);
   const paths = new Map();
@@ -166,9 +212,10 @@ function toSvg(id) {
       let end = x;
       while (end + 1 < row.length && row[end + 1] === ch) end++;
       if (ch !== '.') {
-        if (!PALETTE[ch]) throw new Error(`Ícone ${id}: cor "${ch}" não existe`);
-        const d = paths.get(PALETTE[ch]) ?? '';
-        paths.set(PALETTE[ch], `${d}M${x} ${y}h${end - x + 1}v1h-${end - x + 1}z`);
+        const color = colors[ch] ?? PALETTE[ch];
+        if (!color) throw new Error(`Ícone ${id}: cor "${ch}" não existe`);
+        const d = paths.get(color) ?? '';
+        paths.set(color, `${d}M${x} ${y}h${end - x + 1}v1h-${end - x + 1}z`);
       }
       x = end + 1;
     }
@@ -178,10 +225,25 @@ function toSvg(id) {
   return `<svg class="ico" style="--iw:${w};--ih:${grid.length}" viewBox="0 0 ${w} ${grid.length}" shape-rendering="crispEdges" aria-hidden="true" focusable="false">${body}</svg>`;
 }
 
-export function icon(id) {
-  if (!cache.has(id)) cache.set(id, toSvg(id));
-  return cache.get(id);
+// `colors` swaps palette letters for this one icon, e.g. icon('pig', {p: '#ba7049'}).
+export function icon(id, colors) {
+  const key = colors ? id + JSON.stringify(colors) : id;
+  if (!cache.has(key)) cache.set(key, toSvg(id, colors));
+  return cache.get(key);
 }
+
+const hex = n => '#' + n.toString(16).padStart(6, '0');
+const lighten = (n, f) =>
+  hex(
+    [16, 8, 0].reduce((acc, shift) => {
+      const c = (n >> shift) & 255;
+      return acc * 256 + Math.min(255, Math.round(c + (255 - c) * f));
+    }, 0),
+  );
+
+// A pig portrait in the character's own skin and shirt colours (0xRRGGBB numbers).
+export const pigPortrait = ({skin, shirt}) =>
+  icon('pig', {p: hex(skin), P: lighten(skin, 0.25), t: hex(shirt)});
 
 // Replaces <span data-icon="name"></span> placeholders with the inline SVG.
 export function hydrateIcons(root = document) {

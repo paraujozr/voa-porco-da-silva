@@ -7,6 +7,7 @@ import './styles/tokens.css';
 import './styles/base.css';
 import './styles/components.css';
 import './styles/menu.css';
+import './styles/modal.css';
 import {Session} from './session.js';
 import {socialUI} from './social-ui.js';
 import {hydrateIcons} from './icons.js';

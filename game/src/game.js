@@ -7,7 +7,7 @@ import {makePig, disposeGroup} from './pig.js';
 import {buildWorld} from './world.js';
 import {$, toast} from './dom.js';
 import {RunEntities} from './entities.js';
-import {renderMenu, bestRecord} from './menu-ui.js';
+import {renderMenu, bestRecord, isOwned} from './menu-ui.js';
 import {showModal} from './modal.js';
 import {DuelController} from './duel.js';
 import {buildMenuProp} from './menu-scene.js';
@@ -165,11 +165,11 @@ export class Game {
       if (this.settlement) await this.settlement;
       const map = MAPS[this.mapIndex],
         data = PIGS[this.charIndex],
-        kind = map.cost && !this.save.maps.includes(map.id) ? 'map' : 'skin',
+        kind = isOwned(this.save, 'map', map) ? 'skin' : 'map',
         item = kind === 'map' ? map : data;
-      if (item.cost && !(kind === 'map' ? this.save.maps : this.save.unlocked).includes(item.id)) {
-        await this.session.buy(item, kind);
-        toast(`${item.name} liberado!`);
+      if (!isOwned(this.save, kind, item)) {
+        toast(`Libere ${item.name} para voar.`);
+        this.openPanel(kind === 'map' ? 'maps-panel' : 'porcos-panel');
         return;
       }
       this.duel = null;
@@ -183,6 +183,52 @@ export class Game {
       $('play').disabled = false;
       $('retry').disabled = false;
     }
+  }
+
+  // ---- dialogs & shop ----
+  openPanel(id) {
+    $(id).hidden = false;
+    $(id).querySelector('.close-btn, button')?.focus();
+  }
+
+  closePanel(id) {
+    $(id).hidden = true;
+  }
+
+  // Closes the topmost open dialog (menu or social). Returns whether one was open.
+  closeOpenDialog() {
+    const open = [...document.querySelectorAll('.dialog, .social-overlay')].filter(d => !d.hidden);
+    const top = open.at(-1);
+    if (!top) return false;
+    top.querySelector('.close-btn, .close-social')?.click();
+    if (!top.hidden && top.classList.contains('dialog')) top.hidden = true;
+    return true;
+  }
+
+  async buy(item, kind) {
+    if (this.busy) return;
+    this.busy = true;
+    try {
+      await this.session.buy(item, kind);
+      toast(`${item.name} liberado!`);
+    } catch (e) {
+      toast(e.message);
+    } finally {
+      this.busy = false;
+      this.refreshUI();
+    }
+  }
+
+  async pigAction() {
+    const pig = PIGS[this.charIndex];
+    if (isOwned(this.save, 'skin', pig)) this.closePanel('porcos-panel');
+    else await this.buy(pig, 'skin');
+  }
+
+  async mapAction() {
+    const map = MAPS[this.mapIndex];
+    if (isOwned(this.save, 'map', map)) this.closePanel('maps-panel');
+    else await this.buy(map, 'map');
   }
 
   async settle(quit = false) {
@@ -476,31 +522,29 @@ export class Game {
     return near.y + dir.y * ((z - near.z) / dir.z);
   }
 
-  // Seats the pig on the map's prop and fits the pair into the free area of the screen.
+  // Seats the pig on the map's prop and fits the pair between the top bar and the name bar.
   tickMenuPig() {
-    const {pig, prop, time} = this;
-    const {halfWidth} = this.stage;
+    const {pig, prop, time, stage} = this;
+    const {halfWidth, camera} = stage;
     const compact = innerWidth <= 680,
-      freeTop = 125,
-      freeBottom = document.querySelector('.intro').getBoundingClientRect().top - 8,
-      unit = innerHeight / 20;
-    // Desktop: stand on the road. Compact: the card covers the road, so stand on top of the card.
-    const groundY = compact ? this.worldYAtPx(freeBottom) : ROAD_Y;
-    const groundPx = compact
-      ? freeBottom
-      : innerHeight / 2 - (groundY - this.worldYAtPx(innerHeight / 2)) * unit;
+      unit = innerHeight / 20,
+      freeTop = $('top').getBoundingClientRect().bottom + 8,
+      bottomTop = document.querySelector('.menu-bottom').getBoundingClientRect().top - 24;
+    // Stand on the road; if the name bar covers the road, stand on a pedestal just above it.
+    const roadPx = ((1 - new T.Vector3(0, ROAD_Y, MENU_Z).project(camera).y) / 2) * innerHeight;
+    const groundPx = Math.min(roadPx, bottomTop);
+    const groundY = groundPx === roadPx ? ROAD_Y : this.worldYAtPx(groundPx);
     const region = Math.max(0, groundPx - freeTop);
-    pig.visible = prop.group.visible && (!compact || region > 55);
+    pig.visible = prop.group.visible && region > 55;
     const fitHeight = region / unit / prop.height;
-    const fitWidth = (halfWidth * 2 * (compact ? 0.92 : 0.42)) / prop.width;
-    const scale = Math.max(0.4, Math.min(fitHeight, fitWidth, 2.1));
-    const x = compact ? 0 : halfWidth * 0.45;
+    const fitWidth = (halfWidth * 2 * (compact ? 0.95 : 0.4)) / prop.width;
+    const scale = Math.max(0.4, Math.min(fitHeight, fitWidth, 2.6));
     prop.group.scale.setScalar(scale);
-    prop.group.position.set(x, groundY, MENU_Z);
+    prop.group.position.set(0, groundY, MENU_Z);
     pig.scale.setScalar(scale);
     // The pig's bottom sits about 1.03 below its origin.
     pig.position.set(
-      x + prop.seat.x * scale,
+      prop.seat.x * scale,
       groundY + (prop.seat.y + 1.03) * scale,
       MENU_Z + prop.seat.z * scale,
     );

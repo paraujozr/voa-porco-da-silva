@@ -1,0 +1,200 @@
+/* Dialogs opened from the menu: Porcos, Mapas, Ajustes (and, later, the social panels). */
+.dialog {
+  position: fixed;
+  inset: 0;
+  z-index: 35;
+  display: grid;
+  place-items: center;
+  padding: calc(3 * var(--px) + 6px);
+  background: #04101acc;
+}
+.dialog-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: min(780px, 100%);
+  max-height: 100%;
+  overflow: auto;
+  padding: calc(2 * var(--px));
+  border-style: solid;
+  border-color: transparent;
+  border-width: calc(3 * var(--px));
+  border-image: var(--sprite-panel) 3 fill / calc(3 * var(--px)) / 0 stretch;
+  image-rendering: pixelated;
+  color: var(--ink);
+}
+.dialog-small {
+  width: min(430px, 100%);
+}
+.dialog-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.dialog h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 38px;
+  line-height: 1;
+  color: var(--yellow);
+  text-shadow: var(--title-shadow);
+}
+.close-btn {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  line-height: 0;
+  flex: none;
+}
+.close-btn .ico {
+  --ipx: 3px;
+}
+.dialog-foot {
+  color: var(--ink-dim);
+  font-size: 16px;
+}
+
+/* ---- selection grids (porcos and mapas) ---- */
+.pick-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 10px;
+  padding: 2px 2px 6px;
+}
+#characters {
+  max-height: min(42dvh, 360px);
+  overflow-y: auto;
+}
+.pick-grid-maps {
+  grid-template-columns: repeat(2, 1fr);
+}
+.pick-grid .character,
+.pick-grid .map {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  padding: 8px 4px 4px;
+  text-align: center;
+  line-height: 1.05;
+}
+.pick-grid .avatar .ico {
+  --ipx: 4px;
+}
+.pick-grid .map-icon .ico {
+  --ipx: 5px;
+}
+.pick-grid b {
+  display: block;
+  max-width: 100%;
+  font-size: 18px;
+}
+.pick-grid small {
+  display: block;
+  font-size: 15px;
+}
+
+/* ---- selected item detail ---- */
+.detail {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: calc(2 * var(--px));
+  border-style: solid;
+  border-color: transparent;
+  border-width: calc(3 * var(--px));
+  border-image: var(--sprite-inset) 3 fill / calc(3 * var(--px)) / 0 stretch;
+  image-rendering: pixelated;
+}
+.detail-text {
+  flex: 1;
+  min-width: 0;
+}
+.detail-text strong {
+  display: block;
+  font-family: var(--font-display);
+  font-size: 30px;
+  line-height: 1;
+  color: var(--yellow);
+}
+.detail-text p {
+  margin: 4px 0;
+  color: var(--ink);
+  font-size: 18px;
+  line-height: 1.2;
+}
+.detail-text > span {
+  color: var(--green-lit);
+  font-size: 16px;
+}
+.detail .primary {
+  width: auto;
+  flex: none;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--font-display);
+  font-size: 26px;
+  letter-spacing: 0;
+  padding: 6px 14px 4px;
+}
+.detail .primary .ico {
+  --ipx: 3px;
+}
+
+/* ---- difficulty & settings ---- */
+.levels {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.levels-label {
+  flex: 1 0 100%;
+  color: var(--ink-dim);
+  font-size: 16px;
+}
+.levels .secondary {
+  flex: 1;
+  font-size: 20px;
+  padding: 6px 8px 4px;
+}
+.settings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.settings-list .secondary {
+  font-size: 22px;
+  padding: 8px 12px 6px;
+}
+
+@media (max-width: 680px) {
+  .dialog {
+    padding: 8px;
+  }
+  .dialog h2 {
+    font-size: 30px;
+  }
+  .pick-grid {
+    grid-template-columns: repeat(auto-fill, minmax(98px, 1fr));
+    gap: 8px;
+  }
+  .detail {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .detail .primary {
+    width: 100%;
+  }
+  .detail-text strong {
+    font-size: 26px;
+  }
+  #characters {
+    max-height: 36dvh;
+  }
+}

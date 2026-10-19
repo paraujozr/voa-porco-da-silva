@@ -31,7 +31,6 @@ export class DuelController {
     if (room.state === 'racing' && g.duel?.code !== room.code) {
       g.duel = room;
       g.difficulty = 'normal';
-      $('difficulty').value = 'normal';
       g.switchMap(0);
       if (PIGS[g.charIndex].cost && !g.save.unlocked.includes(PIGS[g.charIndex].id)) g.switchPig(0);
       g.prepare({id: room.code, seed: room.seed, level: room.level, mapId: room.mapId}, true);

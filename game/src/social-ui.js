@@ -26,7 +26,7 @@ export function socialUI(session, {toast, onRoom, onLeave}) {
   let authMode = 'login';
   function render() {
     const p = session.data;
-    $('account-button').textContent = session.user ? p.nickname : 'ENTRAR / PERFIL';
+    $('account-label').textContent = session.user ? p.nickname : 'ENTRAR';
     $('profile-name').textContent = p.nickname;
     if (document.activeElement !== $('nickname')) $('nickname').value = p.nickname;
     $('quick-play').textContent = session.user ? 'VOLTAR AO JOGO' : 'JOGAR RÁPIDO';

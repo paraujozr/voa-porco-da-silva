@@ -7,38 +7,11 @@
  * Colour variants set --block / --block-down; pressing swaps the sprite and sinks the block.
  */
 
-/* ---- panel & inset ---- */
-.intro,
-.preview-label {
-  border-style: solid;
-  border-color: transparent;
-  border-width: calc(3 * var(--px));
-  border-image: var(--sprite-panel) 3 fill / calc(3 * var(--px)) / 0 stretch;
-  border-radius: 0;
-  background: none;
-  box-shadow: none;
-  color: var(--ink);
-  image-rendering: pixelated;
-}
-.intro .char-selector {
-  border-style: solid;
-  border-color: transparent;
-  border-width: calc(3 * var(--px));
-  border-image: var(--sprite-inset) 3 fill / calc(3 * var(--px)) / 0 stretch;
-  border-radius: 0;
-  background: none;
-  box-shadow: none;
-  image-rendering: pixelated;
-}
-
 /* ---- field ---- */
 .field,
 select,
-.difficulty-row select,
 .wallet,
-.build,
-kbd,
-.scene-caption {
+.build {
   border-style: solid;
   border-color: transparent;
   border-width: calc(2 * var(--px));
@@ -54,11 +27,11 @@ kbd,
 .primary,
 .secondary,
 .icon-btn,
+.rail-btn,
+.pick-arrow,
+.close-btn,
 .map,
-.character,
-.char-selector-controls button,
-.pill,
-.char-selector-label {
+.character {
   --block: var(--sprite-btn-steel);
   --block-down: var(--sprite-btn-steel-down);
   border-style: solid;
@@ -90,16 +63,8 @@ kbd,
   --block: var(--sprite-btn-green);
   --block-down: var(--sprite-btn-green-down);
 }
-.pill,
-.char-selector-label {
-  --block: var(--sprite-btn-blue);
-  color: var(--yellow);
-}
-.char-selector-label {
-  transform: none;
-}
 
-button:not(.pill):not(.char-selector-label):active:not(:disabled) {
+button:active:not(:disabled) {
   border-image-source: var(--block-down);
   transform: translateY(var(--px));
 }

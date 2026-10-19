@@ -63,125 +63,11 @@
 #top {
   top: 34px;
 }
-.collection-link {
-  display: block;
-  margin: -6px auto 12px;
-  background: none;
-  border: 0;
-  color: var(--blue);
-  font-size: 11px;
-  font-weight: 800;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-.map small {
-  font-size: 8px;
-}
-.map b {
-  font-size: 11px;
-}
-.preview-label > span {
-  color: #985000;
-}
-.scene-caption {
-  background: #fff4d6d9;
-  padding: 7px;
-  border-radius: 7px;
-}
-.intro {
-  max-height: calc(100dvh - 135px);
-  overflow-y: auto;
-  scrollbar-width: thin;
-}
 .brand small {
   letter-spacing: 2px;
 }
-#collection {
-  position: fixed;
-  inset: 0;
-  z-index: 25;
-  background: #00277699;
-  backdrop-filter: blur(6px);
-  display: grid;
-  place-items: center;
-}
-.collection-card {
-  width: min(900px, 94vw);
-  max-height: 88dvh;
-  overflow-y: auto;
-  background: var(--cream);
-  border: 5px solid var(--blue);
-  border-radius: 22px;
-  padding: 24px;
-  box-shadow: 8px 9px var(--blue);
-}
-.collection-card h2 {
-  font-family: 'Lilita One', sans-serif;
-  font-size: 34px;
-  margin: 4px 0;
-}
-.collection-card p {
-  margin: 4px 0 20px;
-}
 #close-collection {
   float: right;
-}
-#collection-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-}
-.collection-card .character {
-  background: white;
-  border: 3px solid var(--blue);
-  color: var(--blue);
-  min-height: 70px;
-}
-.collection-card .character.selected {
-  background: var(--lime);
-}
-.collection-card .character small {
-  color: #466185;
-}
-.collection-card > small {
-  display: block;
-  margin-top: 16px;
-}
-#music-panel {
-  position: fixed;
-  right: 18px;
-  bottom: 18px;
-  z-index: 22;
-  width: 330px;
-  padding: 12px;
-  background: var(--cream);
-  border: 3px solid var(--blue);
-  border-radius: 14px;
-  box-shadow: 5px 5px var(--blue);
-}
-.music-heading {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-}
-#youtube-player {
-  width: 100%;
-  height: 200px;
-  background: #182d4a;
-}
-#music-panel p,
-#music-panel a {
-  font-size: 11px;
-  line-height: 1.4;
-  color: var(--blue);
-}
-#music-panel p {
-  margin: 8px 0;
-}
-#music-panel .icon-btn {
-  font-size: 9px;
-  padding: 5px 9px;
 }
 body.playing .official-logo {
   width: 44px;
@@ -193,23 +79,9 @@ body.playing .official-logo {
   background: var(--cream);
 }
 @media (min-width: 681px) and (max-height: 760px) {
-  .intro {
-    top: 55%;
-    max-height: calc(100dvh - 118px);
-  }
   .official-logo {
     width: 54px;
     height: 54px;
-  }
-  .collection-link {
-    font-size: 10px;
-    margin: -4px auto 9px;
-  }
-  .lead {
-    margin-bottom: 21px;
-  }
-  .char-selector {
-    margin-bottom: 10px;
   }
 }
 @media (max-width: 680px) {
@@ -235,60 +107,6 @@ body.playing .official-logo {
     font-size: 7px;
     padding: 5px;
   }
-  .intro {
-    max-height: calc(100dvh - 110px);
-  }
-  .collection-link {
-    font-size: 10px;
-    margin: -3px auto 10px;
-  }
-  .map b {
-    font-size: 10px;
-  }
-  .map small {
-    display: block;
-    font-size: 7px;
-    letter-spacing: 0;
-  }
-  .map {
-    padding: 4px 2px;
-  }
-  .maps {
-    gap: 5px;
-  }
-  .char-selector-label {
-    font-size: 11px;
-  }
-  #collection-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .collection-card {
-    padding: 15px;
-  }
-  .collection-card h2 {
-    font-size: 25px;
-  }
-  .collection-card p {
-    font-size: 12px;
-  }
-  .collection-card .character {
-    padding: 8px;
-    gap: 5px;
-  }
-  .collection-card .character b {
-    font-size: 11px;
-  }
-  .collection-card .character small {
-    font-size: 9px;
-  }
-  #music-panel {
-    width: min(330px, calc(100vw - 24px));
-    right: 12px;
-    bottom: 12px;
-  }
-  h1 {
-    font-size: 32px;
-  }
   .fest-flag {
     width: 18px;
     height: 24px;
@@ -302,81 +120,5 @@ body.playing .official-logo {
   .fest-flag,
   .fest-bulb {
     animation: none;
-  }
-}
-.difficulty-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin: 0 0 13px;
-  font-size: 10px;
-  font-weight: 800;
-}
-.difficulty-row select {
-  max-width: 65%;
-  font: inherit;
-  font-size: 12px;
-  color: var(--blue);
-  background: white;
-  border: 2px solid var(--blue);
-  border-radius: 7px;
-  padding: 7px;
-  cursor: pointer;
-}
-.intro {
-  top: 54%;
-}
-@media (max-width: 680px) {
-  .intro {
-    top: auto;
-  }
-  .difficulty-row {
-    margin-bottom: 10px;
-  }
-  .difficulty-row select {
-    padding: 5px;
-  }
-}
-@media (min-width: 681px) and (max-height: 760px) {
-  .intro {
-    padding: 18px 22px 12px;
-    top: 55%;
-    max-height: calc(100dvh - 120px);
-  }
-  .intro h1 {
-    font-size: 36px;
-    margin-bottom: 9px;
-  }
-  .intro .lead {
-    font-size: 11px;
-    margin-bottom: 20px;
-  }
-  .intro .char-selector {
-    padding: 18px 9px 7px;
-    margin-bottom: 9px;
-  }
-  .intro .char-selector p {
-    font-size: 11px;
-    min-height: 24px;
-    margin-top: 6px;
-  }
-  .intro .maps {
-    margin: 5px 0 11px;
-  }
-  .intro .difficulty-row {
-    margin-bottom: 9px;
-  }
-  .intro .primary {
-    font-size: 19px;
-    padding: 9px 12px;
-  }
-  .intro .menu-note {
-    font-size: 10px;
-    margin-top: 12px;
-  }
-  .intro .controls {
-    font-size: 8px;
-    margin-top: 6px;
   }
 }

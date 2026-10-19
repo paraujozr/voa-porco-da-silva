@@ -3,7 +3,7 @@ export const MAPS = [
     id: 'cipo',
     name: 'Cipó Guaçu',
     short: 'CIPÓ',
-    icon: '⌂',
+    icon: 'house',
     cost: 0,
     tag: 'A RESENHA COMEÇA EM CASA',
     desc: 'Uma homenagem imaginada a Cipó: bairro, mata, feira, futebol e festa junina.',
@@ -18,7 +18,7 @@ export const MAPS = [
     id: 'rio',
     name: 'Rio de Janeiro',
     short: 'RIO',
-    icon: '☀',
+    icon: 'sun',
     cost: 40,
     tag: 'SOL, MAR E UM VOO SEM PRESSA',
     desc: 'Orla, calçadão, bondinho e cartões-postais em blocos.',
@@ -33,7 +33,7 @@ export const MAPS = [
     id: 'brasilia',
     name: 'Brasília',
     short: 'BSB',
-    icon: '◇',
+    icon: 'tower',
     cost: 90,
     tag: 'AQUI ATÉ A PROMESSA TEM ASAS',
     desc: 'Congresso, políticos fictícios e promessas de pista livre.',
@@ -48,7 +48,7 @@ export const MAPS = [
     id: 'amazonia',
     name: 'Amazônia',
     short: 'AMZ',
-    icon: '♣',
+    icon: 'tree',
     cost: 140,
     tag: 'CALMA, CAPIVARA!',
     desc: 'Floresta viva, rio, tucanos e um jacaré que só observa.',
@@ -69,7 +69,6 @@ const pig = (id, name, label, desc, skin, shirt, cost = 0, category = 'Brasil') 
   shirt,
   cost,
   category,
-  icon: category === 'Pop' ? '★' : '◆',
 });
 export const PIGS = [
   pig(
