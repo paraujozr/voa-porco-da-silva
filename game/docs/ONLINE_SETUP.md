@@ -13,10 +13,10 @@ Jogo: https://paraujozr.github.io/voa-porco-da-silva/
 - Progresso de convidado não é importado para contas: dados locais podem ser modificados pelo navegador.
 
 ## Desenvolvimento
-Em game/online: npm ci e npm run dev (porta 8787).
+Em game/online: npm ci e npm run dev (porta 8787). O script libera, além do site publicado, as origens locais 127.0.0.1/localhost nas portas 5173 e 5174; em produção só o GitHub Pages é aceito (wrangler.jsonc).
 Em game/.env.local: VITE_ONLINE_URL=http://127.0.0.1:8787
-Em game/: npm ci e npm run dev -- --port 5174.
-Teste real do servidor: node online/check.mjs (servidor local ligado).
+Em game/: npm ci e npm run dev (porta 5173).
+Teste real do servidor: npm test em game/online (servidor local ligado; executa check.mjs). O limite de autenticação é por IP; em dev o check usa um IP falso por execução, mas o navegador compartilha o IP "local" (20 contas/convidados por 15 min).
 Teste de produção opcional: ONLINE_TEST_URL apontando para o servidor publicado; cria contas QA sem informação pessoal.
 Publicar servidor: npm run deploy em game/online após wrangler login. O Wrangler usa a conta do proprietário; nenhuma credencial administrativa é incluída no jogo.
 O build usa game/.env.production. Não publique um build apontando para localhost.

@@ -10,7 +10,8 @@
     "test": "node --test \"test/**/*.test.js\"",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "publish:root": "node scripts/publish-root.mjs"
   },
   "dependencies": {
     "three": "^0.186.1"

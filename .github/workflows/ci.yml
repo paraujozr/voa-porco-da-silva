@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  game:
+    name: Lint, test and build the game
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: game
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: game/package-lock.json
+      - run: npm ci
+      - run: npm run format:check
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+      - name: Is the published root build up to date?
+        run: |
+          if ! diff -q dist/index.html ../index.html >/dev/null; then
+            echo "::warning::Root build is stale. Run 'npm run publish:root' in game/ and commit the result to ship these changes."
+          fi
+
+  online:
+    name: Worker integration check
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: game/online
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: game/online/package-lock.json
+      - run: npm ci
+      - name: Start the worker locally
+        run: |
+          npm run dev > wrangler.log 2>&1 &
+          for i in $(seq 1 60); do curl -sf http://127.0.0.1:8787/health && exit 0; sleep 1; done
+          cat wrangler.log
+          exit 1
+      - run: npm test
+      - name: Worker log
+        if: failure()
+        run: cat wrangler.log

@@ -2,7 +2,15 @@ import js from '@eslint/js';
 import globals from 'globals';
 
 export default [
-  {ignores: ['**/.wrangler/**', 'dist/**', 'node_modules/**', 'online/node_modules/**', 'server/node_modules/**']},
+  {
+    ignores: [
+      '**/.wrangler/**',
+      'dist/**',
+      'node_modules/**',
+      'online/node_modules/**',
+      'server/node_modules/**',
+    ],
+  },
   js.configs.recommended,
   {
     languageOptions: {ecmaVersion: 2023, sourceType: 'module'},
@@ -13,7 +21,14 @@ export default [
   },
   {files: ['src/**/*.js'], languageOptions: {globals: globals.browser}},
   {
-    files: ['core/**/*.js', 'online/**/*.{js,mjs}', 'test/**/*.js', 'server/**/*.{js,mjs}', '*.js'],
+    files: [
+      'core/**/*.js',
+      'online/**/*.{js,mjs}',
+      'test/**/*.js',
+      'server/**/*.{js,mjs}',
+      'scripts/**/*.mjs',
+      '*.js',
+    ],
     languageOptions: {
       globals: {...globals.node, ...globals.serviceworker, WebSocketPair: 'readonly'},
     },

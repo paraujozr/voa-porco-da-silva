@@ -12,7 +12,7 @@ https://paraujozr.github.io/voa-porco-da-silva/
 
 ## Desenvolvimento
 
-O projeto editável está em `game/`: `npm ci`, `npm test`, `npm run dev`. `npm run build` gera `game/dist`. A raiz contém a versão compilada publicada no GitHub Pages.
+O projeto editável está em `game/` (veja [game/README.md](game/README.md) e [game/docs/ARCHITECTURE.md](game/docs/ARCHITECTURE.md)): `npm ci`, `npm test`, `npm run dev`. A raiz contém só a versão compilada publicada no GitHub Pages, gerada por `npm run publish:root` em `game/`; não edite esses arquivos à mão.
 
 A branch `beta-1.0` preserva a versão anterior e as alterações originais do autor. A Beta 1.2 mantém a identidade visual e evolui o jogo existente.
 
