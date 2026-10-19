@@ -56,7 +56,25 @@ export function makePig(data){
  if(id==='peppa'){part(body,v=>{for(let y=-.65;y<.15;y+=.065)v.ellipsoid(0,y,0,.72-(y+.65)*.2,.05,.5,0xdd3d50);});}
  if(id==='torresmo'){for(const [x,y] of [[-.4,.1],[.3,-.3]])oval(body,0x825136,x,y,.43,.2,.16,.04);oval(head,0x956447,.49,.42,.44,.19,.13,.06);}
  if(id==='gobbato'){collar(C.white);patch(body,'P',0,.15,.5,.48,.5,'#ffffff','#08723f');for(const s of [-1,1])cube(head,C.white,s*.38,-.32,.68,.11,.35,.12,s*-.2);}
- if(id==='spiderham'){for(const s of [-1,1]){cube(head,0x191f34,s*.33,.17,.65,.59,.46,.08,s*.13);cube(head,C.white,s*.33,.18,.7,.43,.31,.04,s*.13);}for(const yy of [.39,-.03])cube(head,0x493447,0,yy,.58,1.28,.035,.04);cube(head,0x493447,0,.25,.6,.035,.7,.04);patch(body,'✦',0,.15,.5,.45,.45,'#2869b2','#171e31');}
+ if(id==='spiderham'){
+  const red=0xd72b43,ink=0x14223d,blue=0x2455b4;
+  // Sculpted mask, stepped lenses and raised webbing remain readable at play scale.
+  oval(head,red,0,0,.02,.81,.71,.59);
+  for(const side of [-1,1]){
+   part(head,v=>{for(let row=0;row<5;row++){const width=.48-row*.055;v.cube(side*(.31+row*.012),.32-row*.075,.665,width,.08,.09,ink);v.cube(side*(.31+row*.012),.31-row*.065,.72,Math.max(.09,width-.10),.06,.035,0xfff9ef);}},.035);
+   for(let i=0;i<3;i++)cube(head,ink,side*(.14+i*.19),.47-i*.04,.55-i*.025,.025,.3,.025,side*-.45);
+   cube(body,blue,side*.42,-.14,.39,.29,.8,.2);
+   oval(limbs[side===-1?1:3],red,0,-.44,.07,.235,.27,.25);
+   oval(limbs[side===-1?0:2],blue,0,-.08,0,.23,.25,.25);
+   cube(limbs[side===-1?0:2],red,0,-.34,.13,.47,.34,.54);
+   for(let i=0;i<3;i++)cube(body,ink,side*.15,.16-i*.08,.56,.3,.025,.035,side*(.5-i*.5));
+  }
+  cube(body,red,0,.12,.49,.5,.87,.1);oval(body,ink,0,.12,.56,.085,.14,.035);oval(body,ink,0,.29,.56,.055,.06,.035);
+  for(const side of [-1,1])for(let i=0;i<4;i++)cube(body,ink,side*.16,.2-i*.08,.57,.27,.025,.03,side*(.65-i*.4));
+  oval(head,red,0,-.2,.73,.37,.215,.14);for(const side of [-1,1])oval(head,ink,side*.145,-.17,.86,.06,.08,.025);
+  for(const y of [.43,-.02,-.4])cube(head,ink,0,y,.61,1.1,.025,.025);
+  cube(head,ink,0,.29,.62,.025,.66,.03);
+ }
  if(id==='waddles'){oval(body,0xb7667d,-.35,.25,.4,.28,.28,.1);oval(head,0xb7667d,-.47,.47,.31,.25,.2,.17);}
  if(id==='hamm'){cube(head,0x513040,0,.68,0,.62,.055,.12);oval(body,0xb2804e,0,-.15,.48,.21,.21,.045);}
  if(id==='hawk'){collar(0x357d4f);oval(body,0xc8d5b1,0,.28,.54,.15,.18,.05);}
