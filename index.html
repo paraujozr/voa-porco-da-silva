@@ -1,83 +1,9 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-    <title>Voa Porco da Silva - Edição Brasil 3D</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Lilita+One&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles/base.css">
-    <link rel="stylesheet" href="styles/buttons.css">
-    <link rel="stylesheet" href="styles/hud.css">
-    <link rel="stylesheet" href="styles/menu.css">
-    <link rel="stylesheet" href="styles/game-over.css">
-</head>
-<body class="menu-open">
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0d2430"><meta name="description" content="Voa Porco: Brasil afora. Uma aventura 3D brasileira entre praias, florestas e muita resenha."><title>Voa Porco • Brasil afora</title><link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Lilita+One&display=swap" rel="stylesheet">  <script type="module" crossorigin src="./assets/index-CLX_VrpU.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-6UDH3ycX.css">
+</head><body><canvas id="world" aria-label="Cenário tridimensional do jogo"></canvas><div id="shade"></div><div class="bunting" aria-hidden="true"></div>
+<header id="top"><a class="brand" href="#" aria-label="Voa Porco início"><img class="official-logo" src="./logo-oficial.png" alt="Logo oficial Voa Porco da Silva"><span>VOA PORCO<small>BRASIL AFORA</small></span></a><div class="top-right"><span class="build">BETA 1.1</span><span class="wallet">◉ <b id="wallet">0</b></span><button id="sound" class="icon-btn" aria-label="Ativar ou desativar áudio">SOM ON</button><button id="music-toggle" class="icon-btn">♫ TRILHA</button><button id="quality" class="icon-btn">3D ALTO</button></div></header>
+<main id="menu"><section class="intro"><div class="eyebrow"><i></i> UM BRASIL INTEIRO PRA VOAR</div><h1>VOA PORCO<span>DA SILVA</span></h1><p class="lead">Um trabalhador, duas asinhas e um céu inteiro de desafios. Escolha seu parceiro de voo!</p><div class="char-selector"><div class="char-selector-label">ESCOLHA SEU PORCO TRABALHADOR</div><div class="char-selector-controls"><button id="prev-char" aria-label="Personagem anterior">◀</button><strong id="selected-name">Zé da Obra</strong><button id="next-char" aria-label="Próximo personagem">▶</button></div><p id="selected-desc"></p><span id="selected-cost"></span></div><button id="open-collection" class="collection-link">VER OS 21 PORCOS ↗</button><div class="section-label">01 / ESCOLHA O DESTINO <span>4 MAPAS</span></div><div id="maps" class="maps"></div><div class="destination"><span id="map-tag"></span><p id="map-desc"></p></div><label class="difficulty-row" for="difficulty"><span>DIFICULDADE</span><select id="difficulty"><option value="easy">De boa • fácil</option><option value="normal" selected>Na raça • normal</option><option value="hard">Sem dó • difícil</option></select></label><button id="play" class="primary">BORA VOAR <span>↗</span></button><div class="menu-note">★ DESVIE DOS CANOS. SUPERE SEU RECORDE. ★</div><p class="controls"><kbd>ESPAÇO</kbd> ou clique para voar <span>•</span> <kbd>ESC</kbd> pausa</p></section><aside class="preview-label"><div class="pill">SEU PARCEIRO DE VOO</div><h2 id="pig-name"></h2><p id="pig-desc"></p><span id="pig-cost"></span></aside><section class="hangar"><div class="hangar-heading"><span>02 / ESCOLHA SEU PORCO</span><span id="record">RECORDE NO RIO: 0</span></div><div id="characters"></div></section><span class="scene-caption" id="scene-caption"></span></main>
+<section id="hud" hidden><div class="stat"><small>DISTÂNCIA</small><strong id="score">0</strong><span>CANOS</span></div><div class="flight-info"><span id="flight-map"></span><span>◉ <b id="run-coins">0</b></span><button id="pause" class="icon-btn">Ⅱ PAUSAR</button></div><div class="flight-hint">Toques curtos. Voo bonito. <kbd>ESPAÇO</kbd> / CLIQUE</div></section>
+<section id="modal" hidden role="dialog" aria-modal="true" aria-labelledby="modal-title"><div class="modal-card"><span class="eyebrow" id="modal-eyebrow"></span><h2 id="modal-title"></h2><p id="modal-text"></p><div id="results"><div><span>CANOS</span><b id="result-score">0</b></div><div><span>MOEDAS</span><b id="result-coins">0</b></div><div><span>RECORDE</span><b id="result-best">0</b></div></div><button id="resume" class="primary">CONTINUAR VOO ↗</button><button id="retry" class="primary">MAIS UMA TENTATIVA ↗</button><button id="home" class="secondary">VOLTAR AO HANGAR</button></div></section><section id="collection" hidden role="dialog" aria-modal="true" aria-labelledby="collection-title"><div class="collection-card"><button id="close-collection" class="icon-btn">FECHAR ✕</button><h2 id="collection-title">A tropa da resenha</h2><p>21 porcos em voxel • escolha um para ver em 3D</p><div id="collection-grid"></div><small>Personagens de cultura pop em homenagens estilizadas de fã.</small></div></section><div id="toast" role="status"></div><div id="loading">Preparando a decolagem…</div></body></html>
 
-    <div id="canvas-container"></div>
-
-    <div class="bunting" aria-hidden="true"></div>
-
-    <div class="ui-layer">
-        <!-- Placar durante o jogo -->
-        <div id="hud">
-            <div class="score-box">PONTOS: <span id="score-val">0</span></div>
-            <div class="score-box score-box--best">RECORDE: <span id="best-val">0</span></div>
-        </div>
-
-        <!-- Menu Principal -->
-        <div id="main-menu">
-            <div class="game-title">VOA PORCO <span>DA SILVA</span></div>
-            <div class="game-subtitle">Um trabalhador, duas asinhas e um céu inteiro de desafios. Escolha seu parceiro de voo!</div>
-
-            <div class="char-selector">
-                <div class="char-selector__label">Escolha seu Porco Trabalhador</div>
-                <div class="char-controls">
-                    <button class="arrow-btn" id="prev-char" aria-label="Personagem anterior">&#9664;</button>
-                    <div class="char-name" id="char-name">Zé da Obra</div>
-                    <button class="arrow-btn" id="next-char" aria-label="Próximo personagem">&#9654;</button>
-                </div>
-                <div class="char-desc" id="char-desc">Mestre de obras. Capacete de segurança amarelo e colete refletivo!</div>
-            </div>
-
-            <button class="play-btn" id="start-btn">DECOLAR AGORA &nbsp; ↗</button>
-            <div class="menu-note">DESVIE DOS CANOS. SUPERE SEU RECORDE.</div>
-        </div>
-
-        <div class="hero-label"><strong>Pronto para decolar</strong><span>Feito de coragem. E um pouquinho de bacon.</span></div>
-
-        <!-- Tela de Game Over -->
-        <div id="game-over">
-            <div class="red-card" aria-hidden="true"></div>
-            <div class="go-title">DEU RUIM, PARCEIRO!</div>
-            <p class="go-phrase" id="go-phrase">Bateu direto no andaime da obra!</p>
-            <div class="go-stats">
-                <div>Pontos neste voo: <strong class="go-stats__score" id="final-score">0</strong></div>
-                <div class="go-stats__best">Maior Recorde: <strong class="go-stats__record" id="final-best">0</strong></div>
-            </div>
-            <div class="btn-group">
-                <button class="secondary-btn" id="menu-btn">TROCAR PORCO</button>
-                <button class="play-btn play-btn--compact" id="retry-btn">JOGAR DE NOVO</button>
-            </div>
-        </div>
-
-        <div class="hint-bar">Use <strong>ESPAÇO</strong>, <strong>CLIQUE ESQUERDO</strong> ou <strong>TOQUE NA TELA</strong> para bater as asinhas!</div>
-    </div>
-
-    <!-- Three.js r128 (global THREE), incluído localmente -->
-    <script src="vendor/three.min.js"></script>
-    <script src="src/config/constants.js"></script>
-    <script src="src/config/characters.js"></script>
-    <script src="src/utils/storage.js"></script>
-    <script src="src/utils/lock-zoom.js"></script>
-    <script src="src/audio/sound.js"></script>
-    <script src="src/textures/procedural.js"></script>
-    <script src="src/scene/world.js"></script>
-    <script src="src/entities/pig.js"></script>
-    <script src="src/entities/obstacles.js"></script>
-    <script src="src/ui/dom.js"></script>
-    <script src="src/game.js"></script>
-    <script src="src/main.js"></script>
-</body>
-</html>

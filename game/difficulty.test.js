@@ -1,0 +1,5 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {DIFFICULTIES,flightSpeed,nextGate} from './src/difficulty.js';
+test('velocidade cresce com dificuldade e tem limite em cada nível',()=>{assert.ok(flightSpeed('easy',0)<flightSpeed('normal',0));assert.ok(flightSpeed('normal',0)<flightSpeed('hard',0));for(const [id,d] of Object.entries(DIFFICULTIES))assert.equal(flightSpeed(id,10000),d.speed+d.maxBoost);});
+test('sequências variam espaçamento, abertura e altura sem saltos fora dos limites',()=>{for(const [id,d] of Object.entries(DIFFICULTIES)){let seed=47,last=1,spacing=0;const rng=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/2**32;};const samples=[];for(let i=0;i<300;i++){const s=nextGate(id,last,spacing,rng);assert.ok(s.spacing>=d.spacing[0]&&s.spacing<=d.spacing[1]);assert.ok(s.gap>=d.gap[0]&&s.gap<=d.gap[1]);assert.ok(s.center>=-.7&&s.center<=2.8);assert.ok(Math.abs(s.center-last)<=d.rise+.001);assert.ok(s.spacing/flightSpeed(id,100)>.99);last=s.center;spacing=s.spacing;samples.push(s);}assert.ok(new Set(samples.map(s=>s.spacing.toFixed(1))).size>20);assert.ok(new Set(samples.map(s=>s.gap.toFixed(2))).size>30);}});
