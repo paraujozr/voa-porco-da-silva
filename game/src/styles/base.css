@@ -1,0 +1,32 @@
+/* Base rules shared by every screen. */
+[hidden] {
+  display: none !important;
+}
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: var(--px) solid var(--yellow);
+  outline-offset: var(--px);
+}
+
+/* Pixel icons (see src/icons.js): one icon pixel = --ipx. */
+.ico {
+  --ipx: 2px;
+  display: inline-block;
+  width: calc(var(--iw) * var(--ipx));
+  height: calc(var(--ih) * var(--ipx));
+  vertical-align: -0.12em;
+  image-rendering: pixelated;
+  flex: none;
+}
+.ico-lg .ico {
+  --ipx: 3px;
+}
+[data-icon],
+.ico-slot {
+  display: inline-flex;
+  align-items: center;
+  line-height: 0;
+}

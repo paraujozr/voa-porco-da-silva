@@ -4,16 +4,20 @@ import './voxel.css';
 import './social.css';
 import './styles/sprites.css';
 import './styles/tokens.css';
+import './styles/base.css';
 import './styles/components.css';
 import './styles/menu.css';
 import {Session} from './session.js';
 import {socialUI} from './social-ui.js';
+import {hydrateIcons} from './icons.js';
 import {AudioSystem} from './audio.js';
 import {MusicPlayer, decorateFestival} from './music.js';
 import {$, toast} from './dom.js';
 import {Stage} from './stage.js';
 import {Game} from './game.js';
 import {bindControls} from './controls.js';
+
+hydrateIcons();
 
 let storage;
 try {
