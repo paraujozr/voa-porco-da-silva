@@ -1,17 +1,26 @@
 import {MathUtils as M} from 'three';
 // Integrate wing phase instead of multiplying time by a changing speed: no pose jumps.
-export function animatePig(pig, {time, dt, state, velocity = 0, pulse = 0, dance = 0}) {
+// `sit` (0..1) blends in the seated menu pose: legs forward, arms resting, calm wings, head looking
+// around. It is eased here, so callers can flip it between 0 and 1 without pose jumps.
+export function animatePig(
+  pig,
+  {time, dt, state, velocity = 0, pulse: pulseIn = 0, dance = 0, sit = 0},
+) {
   const u = pig.userData,
     a = (u.motion ||= {phase: 0, rate: 8, energy: 0}),
     flying = state === 'playing',
     hit = state === 'over';
+  const s = (u.sit = M.damp(u.sit ?? 0, sit, 3.5, dt));
+  // An occasional wing flutter while seated.
+  const pulse = pulseIn + s * Math.max(0, Math.sin(time * 1.1)) ** 10 * 0.9;
   const falling = flying ? M.clamp((-velocity - 1) / 9, 0, 1) : 0;
-  a.rate = M.damp(a.rate, hit ? 2 : 8 + Math.max(0, pulse) * 10 - falling * 3, 6, dt);
+  const rate = hit ? 2 : 8 + Math.max(0, pulse) * 10 - falling * 3;
+  a.rate = M.damp(a.rate, rate * (1 - 0.55 * s), 6, dt);
   a.energy = M.damp(a.energy, pulse, 12, dt);
   a.phase += a.rate * dt;
   const beat = Math.sin(a.phase),
     lift = Math.sin(a.phase - 0.6),
-    strength = hit ? 0.1 : 0.38 + a.energy * 0.45;
+    strength = (hit ? 0.1 : 0.38 + a.energy * 0.45) * (1 - 0.5 * s);
   u.wings.forEach((wing, i) => {
     const side = i ? 1 : -1;
     wing.rotation.z = M.damp(
@@ -101,6 +110,20 @@ export function animatePig(pig, {time, dt, state, velocity = 0, pulse = 0, dance
       dt,
     );
   });
+  if (u.head) {
+    u.head.rotation.y = M.damp(u.head.rotation.y, Math.sin(time * 0.7) * 0.4 * s, 4, dt);
+  }
+  if (s > 0.001) {
+    u.limbs?.forEach((limb, i) => {
+      const arm = i === 1 || i === 3,
+        side = i < 2 ? -1 : 1;
+      const x = arm
+        ? -0.55 + Math.sin(time * 1.4 + i) * 0.05
+        : -1.05 + Math.sin(time * 2.2 + i) * 0.1;
+      limb.rotation.x = M.lerp(limb.rotation.x, x, s);
+      limb.rotation.z = M.lerp(limb.rotation.z, side * (arm ? 0.2 : 0.18), s);
+    });
+  }
   if (u.tail) u.tail.rotation.x = M.damp(u.tail.rotation.x, Math.sin(a.phase - 1.8) * 0.3, 8, dt);
   if (flying) {
     pig.rotation.z = M.damp(

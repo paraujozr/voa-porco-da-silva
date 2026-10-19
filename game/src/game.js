@@ -10,6 +10,11 @@ import {RunEntities} from './entities.js';
 import {renderMenu, bestRecord} from './menu-ui.js';
 import {showModal} from './modal.js';
 import {DuelController} from './duel.js';
+import {buildMenuProp} from './menu-scene.js';
+
+// The menu set piece stands on the road in front of the camera.
+const MENU_Z = 4;
+const ROAD_Y = -4.8;
 
 // Values double as <body> class names (see the CSS), so keep them stable.
 export const STATE = {
@@ -39,6 +44,7 @@ export class Game {
     this.difficulty = 'normal';
     this.world = null;
     this.pig = null;
+    this.prop = null; // the menu set piece the pig sits on
 
     this.run = null; // engine state of the current flight
     this.ticket = null; // server/guest receipt for the current flight
@@ -73,6 +79,7 @@ export class Game {
   // ---- state & menu ----
   setState(next) {
     this.state = next;
+    if (this.prop) this.prop.group.visible = next === STATE.MENU;
     document.body.className = next;
     $('menu').hidden = next !== STATE.MENU;
     $('hud').hidden = next === STATE.MENU;
@@ -98,6 +105,10 @@ export class Game {
     this.mapIndex = index;
     if (this.world) disposeGroup(this.world.group);
     this.world = buildWorld(this.stage.scene, MAPS[index]);
+    if (this.prop) disposeGroup(this.prop.group);
+    this.prop = buildMenuProp(MAPS[index].id);
+    this.prop.group.visible = this.state === STATE.MENU;
+    this.stage.scene.add(this.prop.group);
     this.refreshUI();
   }
 
@@ -434,7 +445,9 @@ export class Game {
       velocity: run?.v || 0,
       pulse: this.flapPulse,
       dance: this.dance,
+      sit: this.state === STATE.MENU ? 1 : 0,
     });
+    if (this.state === STATE.MENU) this.prop.update(this.time);
     if (this.dance > 0) {
       this.dance -= dt;
       this.fireworkTimer -= dt;
@@ -455,22 +468,42 @@ export class Game {
     this.entities.update(dt);
   }
 
-  // Idle showcase pose for the selected pig, fitted into the free area above the menu card.
+  // World y of a screen row, on the plane the menu scene stands on.
+  worldYAtPx(px, z = MENU_Z) {
+    const {camera} = this.stage;
+    const near = new T.Vector3(0, 1 - (2 * px) / innerHeight, -1).unproject(camera);
+    const dir = camera.getWorldDirection(new T.Vector3());
+    return near.y + dir.y * ((z - near.z) / dir.z);
+  }
+
+  // Seats the pig on the map's prop and fits the pair into the free area of the screen.
   tickMenuPig() {
-    const {pig, time} = this;
+    const {pig, prop, time} = this;
     const {halfWidth} = this.stage;
     const compact = innerWidth <= 680,
       freeTop = 125,
       freeBottom = document.querySelector('.intro').getBoundingClientRect().top - 8,
-      region = Math.max(0, freeBottom - freeTop);
-    pig.visible = !compact || region > 55;
-    pig.scale.setScalar(compact ? Math.min(1.25, ((region / innerHeight) * 20) / 3.8) : 1.85);
-    const menuY = 1 + (0.5 - (freeTop + freeBottom) / 2 / innerHeight) * 20 + 0.6;
+      unit = innerHeight / 20;
+    // Desktop: stand on the road. Compact: the card covers the road, so stand on top of the card.
+    const groundY = compact ? this.worldYAtPx(freeBottom) : ROAD_Y;
+    const groundPx = compact
+      ? freeBottom
+      : innerHeight / 2 - (groundY - this.worldYAtPx(innerHeight / 2)) * unit;
+    const region = Math.max(0, groundPx - freeTop);
+    pig.visible = prop.group.visible && (!compact || region > 55);
+    const fitHeight = region / unit / prop.height;
+    const fitWidth = (halfWidth * 2 * (compact ? 0.92 : 0.42)) / prop.width;
+    const scale = Math.max(0.4, Math.min(fitHeight, fitWidth, 2.1));
+    const x = compact ? 0 : halfWidth * 0.45;
+    prop.group.scale.setScalar(scale);
+    prop.group.position.set(x, groundY, MENU_Z);
+    pig.scale.setScalar(scale);
+    // The pig's bottom sits about 1.03 below its origin.
     pig.position.set(
-      compact ? 0 : halfWidth * 0.48,
-      compact ? menuY : 2 + Math.sin(time * 2) * 0.13,
-      4,
+      x + prop.seat.x * scale,
+      groundY + (prop.seat.y + 1.03) * scale,
+      MENU_Z + prop.seat.z * scale,
     );
-    pig.rotation.set(0.02, 0.24 + Math.sin(time * 0.6) * 0.16, 0.03);
+    pig.rotation.set(0.02, 0.24 + Math.sin(time * 0.6) * 0.08, 0.03);
   }
 }
