@@ -1,63 +1,703 @@
 import * as T from 'three';
-import './style.css';import './reference.css';import './voxel.css';import './social.css';
-import {MAPS,PIGS,MEMES,writeSave} from './config.js';
+import './style.css';
+import './reference.css';
+import './voxel.css';
+import './social.css';
+import {MAPS, PIGS, MEMES} from './config.js';
 import {DIFFICULTY_NAMES} from './difficulty.js';
-import {createRun,advance,revive,continuePrice,DT,MAX_TICKS,LEVELS} from '../core/engine.js';
-import {Session} from './session.js';import {socialUI} from './social-ui.js';
+import {createRun, advance, revive, continuePrice, DT, LEVELS} from '../core/engine.js';
+import {Session} from './session.js';
+import {socialUI} from './social-ui.js';
 import {animatePig} from './animation.js';
-import {makePig,disposeGroup,mat,ball} from './pig.js';
-import {buildWorld,makeGate,makeCoin} from './world.js';
-import {AudioSystem} from './audio.js';import {MusicPlayer,decorateFestival} from './music.js';
-const $=id=>document.getElementById(id);
-let storage;try{storage=window.localStorage;}catch{storage={getItem:()=>null,setItem:()=>{}};}
-const session=new Session(storage);let save=session.data;const audio=new AudioSystem(save.muted),music=new MusicPlayer(save.muted,()=>audio.fahh());decorateFestival();
+import {makePig, disposeGroup, mat, ball} from './pig.js';
+import {buildWorld, makeGate, makeCoin} from './world.js';
+import {AudioSystem} from './audio.js';
+import {MusicPlayer, decorateFestival} from './music.js';
+const $ = id => document.getElementById(id);
+let storage;
+try {
+  storage = window.localStorage;
+} catch {
+  storage = {getItem: () => null, setItem: () => {}};
+}
+const session = new Session(storage);
+let save = session.data;
+const audio = new AudioSystem(save.muted),
+  music = new MusicPlayer(save.muted, () => audio.fahh());
+decorateFestival();
 let renderer;
-try{renderer=new T.WebGLRenderer({canvas:$('world'),antialias:true,powerPreference:'high-performance'});}catch(e){$('loading').textContent='O navegador não conseguiu iniciar o 3D. Ative a aceleração de hardware ou tente Chrome/Edge atualizado.';throw e;}
-renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;renderer.shadowMap.type=T.PCFShadowMap;
-const scene=new T.Scene();const camera=new T.OrthographicCamera(-16,16,10,-10,.1,160);const hemi=new T.HemisphereLight(0xfff8de,0x426b88,1.5);scene.add(hemi);const sun=new T.DirectionalLight(0xffefce,2.6);sun.position.set(-12,25,18);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);Object.assign(sun.shadow.camera,{left:-32,right:32,top:25,bottom:-25,near:1,far:100});sun.shadow.bias=-.0005;scene.add(sun);
-let state='menu',mapIndex=0,charIndex=0,world,pig,halfWidth=16,time=0,last=performance.now(),accumulator=0,playerX=-7,flapPulse=0,difficulty='normal';
-let run=null,ticket=null,inputs=[],pendingFlap=false,settlement=null,busy=false,social,duel=null,duelBusy=false,duelFinalPending=false,dance=0,fireworkTimer=0;
-const departedRooms=new Set();
-const gates=new Map(),tokens=new Map(),particles=[];
-const bestRecord=()=>save.best[`${MAPS[mapIndex].id}:${difficulty}`]||0;
-function toast(text){$('toast').textContent=text;$('toast').classList.add('visible');clearTimeout(toast.timer);toast.timer=setTimeout(()=>$('toast').classList.remove('visible'),3600);}
-function setState(next){state=next;document.body.className=next;$('menu').hidden=next!=='menu';$('hud').hidden=next==='menu';$('modal').hidden=!['paused','over'].includes(next);$('countdown').hidden=next!=='countdown';$('pause').textContent=duel?'SAIR DO DUELO':'Ⅱ PAUSAR';}
-function resize(){halfWidth=10*innerWidth/innerHeight;Object.assign(camera,{left:-halfWidth,right:halfWidth,top:10,bottom:-10});camera.updateProjectionMatrix();camera.position.set(0,5.5,32);camera.lookAt(0,1,0);renderer.setSize(innerWidth,innerHeight);playerX=-halfWidth*(innerWidth<=680?.48:.42);}
-function quality(){renderer.setPixelRatio(Math.min(devicePixelRatio,save.low?1:1.7));renderer.shadowMap.enabled=!save.low;$('quality').textContent=save.low?'3D LEVE':'3D ALTO';resize();}
-function refreshUI(){const map=MAPS[mapIndex],data=PIGS[charIndex],locked=data.cost&&!save.unlocked.includes(data.id);$('wallet').textContent=save.coins;$('pig-name').textContent=data.name;$('selected-name').textContent=data.name;$('selected-desc').textContent=data.desc;$('selected-cost').textContent=locked?`${data.cost} moedas para liberar`:'';$('pig-desc').textContent=data.desc;$('pig-cost').textContent=locked?`DESBLOQUEIE POR ${data.cost} MOEDAS`:'';$('map-tag').textContent=map.tag;$('map-desc').textContent=map.desc;$('scene-caption').textContent=map.caption;$('record').textContent=`RECORDE • ${map.short}: ${bestRecord()}`;const mapLocked=map.cost&&!save.maps.includes(map.id);$('play').innerHTML=mapLocked?`LIBERAR ${map.short} · ${map.cost} ◉ <span>↗</span>`:locked?`DESBLOQUEAR · ${data.cost} ◉ <span>↗</span>`:'DECOLAR AGORA <span>↗</span>';$('sound').textContent=save.muted?'SOM OFF':'SOM ON';
- $('maps').innerHTML=MAPS.map((m,i)=>`<button class="map ${i===mapIndex?'selected':''}" data-map="${i}" aria-pressed="${i===mapIndex}"><span class="map-icon">${m.icon}</span><b>${m.name}</b><small>${m.cost&&!save.maps.includes(m.id)?`🔒 ${m.cost} moedas`:'✓ LIBERADO'}</small></button>`).join('');
- $('characters').innerHTML=PIGS.map((p,i)=>`<button class="character ${i===charIndex?'selected':''}" data-char="${i}" aria-pressed="${i===charIndex}"><span class="avatar">${p.icon}</span><span><b>${p.name}</b><small>${p.cost&&!save.unlocked.includes(p.id)?`◉ ${p.cost} para liberar`:p.label.replace(/\d+ moedas/,'LIBERADO')}</small></span></button>`).join('');$('collection-grid').innerHTML=$('characters').innerHTML;$('open-collection').textContent=`VER OS ${PIGS.length} PORCOS · ${charIndex+1}/${PIGS.length} ↗`;}
-function switchMap(index){mapIndex=index;if(world)disposeGroup(world.group);world=buildWorld(scene,MAPS[index]);refreshUI();}
-function switchPig(index){charIndex=index;if(pig)disposeGroup(pig);pig=makePig(PIGS[index]);scene.add(pig);refreshUI();}
-function clearRun(){for(const collection of [gates,tokens]){collection.forEach(m=>disposeGroup(m));collection.clear();}particles.forEach(p=>disposeGroup(p.mesh));particles.length=0;}
-function prepare(t,duelMode=false){clearRun();ticket=t;run=createRun(t.seed,t.level,duelMode);inputs=[];pendingFlap=false;settlement=null;accumulator=0;dance=0;$('six-seven').hidden=true;flapPulse=0;pig.scale.setScalar(.68);pig.rotation.set(0,.2,0);pig.visible=true;$('score').textContent='0';$('run-coins').textContent='0';$('flight-map').textContent=`${MAPS[mapIndex].name} · ${DIFFICULTY_NAMES[difficulty]}`;$('rival-distance').hidden=!duelMode;music.theme();audio.unlock();document.activeElement?.blur();}
-async function start(){if(busy)return;if(social?.hasRoom()){social.showRoom();toast('Saia da sala antes de iniciar um voo solo.');return;}audio.unlock();music.unlock();busy=true;$('play').disabled=true;$('retry').disabled=true;try{if(settlement)await settlement;const map=MAPS[mapIndex],data=PIGS[charIndex],kind=map.cost&&!save.maps.includes(map.id)?'map':'skin',item=kind==='map'?map:data;if(item.cost&&!(kind==='map'?save.maps:save.unlocked).includes(item.id)){await session.buy(item,kind);toast(`${item.name} liberado!`);return;}duel=null;prepare(await session.begin(map.id,data.id,difficulty));setState('playing');audio.play('flap');}catch(e){toast(e.message);}finally{busy=false;$('play').disabled=false;$('retry').disabled=false;}}
-async function settle(quit=false){if(!run||!ticket||duel)return;settlement=session.settle(ticket,run,[...inputs],quit);return settlement;}
-function updateContinue(){const allowed=run&&!duel&&run.dead&&run.reason!=='limit'&&run.continues<3;$('continue-run').hidden=!allowed;if(allowed){const price=continuePrice(run.continues);$('continue-run').textContent=`CONTINUAR · ${price} ◉`;$('continue-run').disabled=save.coins<price;$('continue-note').textContent=save.coins<price?`Faltam ${price-save.coins} moedas.`:'1,5 s de proteção. Voos com continue não entram no ranking global.';}else $('continue-note').textContent=duel?'No duelo, não há continue. Aguarde o outro jogador.':'';}
-async function end(){if(state!=='playing')return;setState('over');music.fail();$('modal-eyebrow').textContent=duel?'DUELO EM ANDAMENTO':'POUSO NÃO PROGRAMADO';$('modal-title').textContent=run.reason==='limit'?'Voo concluído!':'Deu ruim, parceiro!';$('modal-text').textContent=`${save.nickname}, você atravessou ${run.passed} canos.`;$('results').hidden=false;$('result-score').textContent=run.passed;$('result-coins').textContent=run.coins;$('result-best').textContent=bestRecord();$('resume').hidden=true;$('retry').hidden=!!duel;$('continue-run').hidden=true;$('continue-note').textContent=duel?'Aguardando o resultado do duelo…':'Salvando a partida…';burst(pig.position,0xf5b3a9,16);if(duel){await sendDuel(true);return;}try{await settle();$('result-best').textContent=bestRecord();updateContinue();}catch(e){$('continue-note').textContent='Não foi possível salvar. Voltar ou tentar novamente fará uma nova tentativa.';settlement=null;ticket.needsSettle=true;toast(e.message);}}
-async function continueRun(){if(busy||state!=='over'||!run?.dead||duel)return;busy=true;$('continue-run').disabled=true;try{if(settlement)await settlement;await session.continue(ticket,run);revive(run);syncEntities();settlement=null;accumulator=0;pendingFlap=false;pig.rotation.set(0,.2,0);pig.visible=true;music.theme();setState('playing');document.activeElement?.blur();toast('Bora! Proteção por 1,5 segundo.');}catch(e){toast(e.message);}finally{busy=false;if(state==='over')updateContinue();}}
-function pause(){if(state!=='playing')return;if(duel){forfeit();return;}setState('paused');music.pause();$('modal-eyebrow').textContent='PAUSA PRA RESENHA';$('modal-title').textContent='Asinhas descansando.';$('modal-text').textContent='Continue quando estiver pronto.';$('results').hidden=true;$('continue-run').hidden=true;$('continue-note').textContent='';$('resume').hidden=false;$('retry').hidden=true;}
-function resume(){if(state!=='paused')return;accumulator=0;music.theme();setState('playing');document.activeElement?.blur();}
-async function home(){if(busy)return;busy=true;try{if(duel){const code=duel.code;await session.call('leaveRoom',{code});departedRooms.add(code);social?.releaseRoom();duel=null;}else if(run&&['playing','paused'].includes(state)){await settle(true);}else if(ticket?.needsSettle){await settle();ticket.needsSettle=false;}else if(settlement){await settlement;}music.stop();clearRun();run=null;ticket=null;settlement=null;dance=0;$('six-seven').hidden=true;setState('menu');refreshUI();}catch(e){toast(e.message);}finally{busy=false;}}
-function flap(){if(state!=='playing')return;pendingFlap=true;flapPulse=1;audio.play('flap');}
-function burst(pos,color,n=8){for(let i=0;i<n;i++){const m=ball(scene,mat(color),pos.x,pos.y,pos.z,.06+Math.random()*.06);particles.push({mesh:m,v:new T.Vector3((Math.random()-.5)*6,Math.random()*5,(Math.random()-.5)*4),life:.9});}}
-function celebrate(){dance=3.8;fireworkTimer=0;$('six-seven').hidden=false;music.sixSeven?.();toast('67 canos! SIX SEVEN!');}
-function syncEntities(){const gids=new Set(run.gates.map(g=>g.id)),tids=new Set(run.tokens.map(c=>c.id));for(const [id,m] of gates)if(!gids.has(id)){disposeGroup(m);gates.delete(id);}for(const [id,m] of tokens)if(!tids.has(id)){if(m.position.x>playerX-1.5)burst(m.position,0xffde63,4);disposeGroup(m);tokens.delete(id);}for(const g of run.gates){if(!gates.has(g.id))gates.set(g.id,makeGate(scene,MAPS[mapIndex],g.center,g.gap,playerX+g.x));gates.get(g.id).position.x=playerX+g.x;}for(const c of run.tokens){if(!tokens.has(c.id))tokens.set(c.id,makeCoin(scene,playerX+c.x,c.y));tokens.get(c.id).position.x=playerX+c.x;}}
-function step(){if(pendingFlap){inputs.push(run.tick);}const beforeCoins=run.coins,beforePassed=run.passed;const result=advance(run,pendingFlap);pendingFlap=false;if(run.coins>beforeCoins)audio.play('coin');if(run.passed>beforePassed&&run.passed%3===0)toast(MEMES[run.passed%MEMES.length]);$('score').textContent=run.passed;$('run-coins').textContent=run.coins;if(result.sixSeven)celebrate();if(result.dead)end();}
-function handleRoom(room){if(!session.uid||departedRooms.has(room.code))return;if(room.state==='cancelled'){if(duel?.code===room.code){duel=null;home();}return;}if(room.state==='racing'&&duel?.code!==room.code){duel=room;difficulty='normal';$('difficulty').value='normal';switchMap(0);if(PIGS[charIndex].cost&&!save.unlocked.includes(PIGS[charIndex].id))switchPig(0);prepare({id:room.code,seed:room.seed,level:room.level,mapId:room.mapId},true);social?.hide();setState('countdown');}
- if(duel?.code===room.code){duel=room;const rival=Object.entries(room.players).find(([uid])=>uid!==session.uid)?.[1];$('rival-distance').textContent=rival?`${rival.nickname}: ${rival.distance} canos`:'Aguardando rival';if(room.state==='finished'){setState('over');music.stop();$('modal-eyebrow').textContent='RESULTADO DO DUELO';$('modal-title').textContent=room.winner==='draw'?'Empate na resenha!':room.winner===session.uid?'Você venceu!':'O rival voou mais!';$('modal-text').textContent=Object.values(room.players).map(p=>`${p.nickname}: ${p.distance} canos`).join(' • ');$('results').hidden=true;$('resume').hidden=true;$('retry').hidden=true;$('continue-run').hidden=true;$('continue-note').textContent='Abra Duelo no menu para criar outra sala.';}}}
-async function sendDuel(final=false){if(!duel||!['racing','finished'].includes(duel.state))return;if(duelBusy){duelFinalPending ||=final;return;}duelBusy=true;try{const data={code:duel.code};if(run&&duel.state==='racing'&&(state==='playing'||final)){Object.assign(data,{inputs:[...inputs],ticks:run.tick,quit:final});}const out=await session.call('duelTick',data);if(duel?.code===data.code)handleRoom(out.room);}catch(e){toast('Duelo: '+e.message);}finally{duelBusy=false;if(duelFinalPending){duelFinalPending=false;sendDuel(true);}}}
-function forfeit(){if(!duel||!run)return;run.dead=true;run.reason='quit';if(state==='playing')end();else sendDuel(true);}
-setInterval(()=>{if(duel&&duel.state==='racing'&&state!=='countdown')sendDuel();},2200);
-function animate(now){requestAnimationFrame(animate);const dt=Math.min((now-last)/1000,.05);last=now;if(state==='countdown'){const seconds=Math.ceil((duel.startAt-session.now())/1000);$('countdown').textContent=seconds>0?seconds:'VOA!';if(seconds<=0){setState('playing');music.theme();}}
- if(state==='playing'&&run){if(duel){const target=Math.max(0,Math.floor((session.now()-duel.startAt)*120/1000));if(target-run.tick>1200){forfeit();}else{let budget=600;while(run.tick<target&&state==='playing'&&budget-->0)step();}}else{accumulator+=dt;while(accumulator>=DT&&state==='playing'){step();accumulator-=DT;}}syncEntities();pig.position.set(playerX,run.y,0);pig.visible=!run.shield||Math.floor(time*12)%2===0;}
- if(state!=='paused'){time+=dt;world.update(time,dt,state==='playing',run?LEVELS[run.level].speed+Math.min(run.passed*.04,LEVELS[run.level].boost):0);flapPulse=Math.max(0,flapPulse-dt*4);animatePig(pig,{time,dt,state,velocity:run?.v||0,pulse:flapPulse,dance});tokens.forEach(c=>c.rotation.y+=dt*2);if(dance>0){dance-=dt;fireworkTimer-=dt;if(fireworkTimer<=0){fireworkTimer=.24;burst(new T.Vector3((Math.random()-.5)*halfWidth*1.3,3+Math.random()*4,1),[0xffdf00,0x50e3c2,0xff71ab][Math.floor(Math.random()*3)],18);}if(dance<=0)$('six-seven').hidden=true;}for(let i=particles.length-1;i>=0;i--){const p=particles[i];p.life-=dt;p.mesh.position.addScaledVector(p.v,dt);p.v.y-=5*dt;p.mesh.scale.setScalar(Math.max(0,p.life/.9));if(p.life<=0){disposeGroup(p.mesh);particles.splice(i,1);}}}
- if(state==='menu'){const compact=innerWidth<=680,freeTop=125,freeBottom=document.querySelector('.intro').getBoundingClientRect().top-8,region=Math.max(0,freeBottom-freeTop);pig.visible=!compact||region>55;pig.scale.setScalar(compact?Math.min(1.25,region/innerHeight*20/3.8):1.85);const menuY=1+(0.5-(freeTop+freeBottom)/2/innerHeight)*20+.6;pig.position.set(compact?0:halfWidth*.48,compact?menuY:2+Math.sin(time*2)*.13,4);pig.rotation.set(.02,.24+Math.sin(time*.6)*.16,.03);}
- renderer.render(scene,camera);}
-$('maps').onclick=e=>{const b=e.target.closest('[data-map]');if(b)switchMap(Number(b.dataset.map));};$('characters').onclick=e=>{const b=e.target.closest('[data-char]');if(b)switchPig(Number(b.dataset.char));};
-$('prev-char').onclick=()=>switchPig((charIndex-1+PIGS.length)%PIGS.length);$('next-char').onclick=()=>switchPig((charIndex+1)%PIGS.length);
-$('play').onclick=start;$('retry').onclick=()=>{if(ticket?.needsSettle){settlement=settle();ticket.needsSettle=false;}start();};$('continue-run').onclick=continueRun;$('pause').onclick=pause;$('resume').onclick=resume;$('home').onclick=home;
-$('sound').onclick=()=>{save.muted=!save.muted;audio.muted=save.muted;music.mute(save.muted);if(!save.muted&&state==='playing')music.theme();if(!session.user)session.saveGuest();refreshUI();};$('quality').onclick=()=>{save.low=!save.low;quality();if(!session.user)session.saveGuest();};
-window.addEventListener('keydown',e=>{if(e.target.closest('input,select,textarea'))return;if(['Escape','KeyP'].includes(e.code)){if(state==='playing')pause();else if(state==='paused')resume();}if(['Space','ArrowUp'].includes(e.code)&&state==='playing'){e.preventDefault();if(!e.repeat)flap();}});window.addEventListener('pointerdown',()=>{audio.unlock();music.unlock();},{once:true});window.addEventListener('pointerdown',e=>{if(!e.target.closest('button,a,input,select,.social-overlay,#collection')&&state==='playing')flap();});window.addEventListener('blur',()=>{if(!duel)pause();});document.addEventListener('visibilitychange',()=>{if(document.hidden){if(duel)forfeit();else pause();}});window.addEventListener('resize',()=>{if(state==='playing'&&!duel)pause();resize();});$('world').addEventListener('webglcontextlost',e=>{e.preventDefault();if(duel)forfeit();else pause();toast('O 3D foi interrompido. Recarregue para voltar.');});
-$('open-collection').onclick=()=>{$('collection').hidden=false;};$('close-collection').onclick=()=>{$('collection').hidden=true;};$('collection-grid').onclick=e=>{const b=e.target.closest('[data-char]');if(b){switchPig(Number(b.dataset.char));$('collection').hidden=true;}};$('difficulty').onchange=e=>{difficulty=e.target.value;refreshUI();};
-session.onChange=data=>{save=data;refreshUI();social?.render();};switchMap(0);switchPig(0);quality();setState('menu');social=socialUI(session,{toast,onRoom:handleRoom,onLeave:()=>{duel=null;home();}});session.init();$('loading').remove();requestAnimationFrame(animate);
+try {
+  renderer = new T.WebGLRenderer({
+    canvas: $('world'),
+    antialias: true,
+    powerPreference: 'high-performance',
+  });
+} catch (e) {
+  $('loading').textContent =
+    'O navegador não conseguiu iniciar o 3D. Ative a aceleração de hardware ou tente Chrome/Edge atualizado.';
+  throw e;
+}
+renderer.outputColorSpace = T.SRGBColorSpace;
+renderer.toneMapping = T.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+renderer.shadowMap.type = T.PCFShadowMap;
+const scene = new T.Scene();
+const camera = new T.OrthographicCamera(-16, 16, 10, -10, 0.1, 160);
+const hemi = new T.HemisphereLight(0xfff8de, 0x426b88, 1.5);
+scene.add(hemi);
+const sun = new T.DirectionalLight(0xffefce, 2.6);
+sun.position.set(-12, 25, 18);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, {left: -32, right: 32, top: 25, bottom: -25, near: 1, far: 100});
+sun.shadow.bias = -0.0005;
+scene.add(sun);
+let state = 'menu',
+  mapIndex = 0,
+  charIndex = 0,
+  world,
+  pig,
+  halfWidth = 16,
+  time = 0,
+  last = performance.now(),
+  accumulator = 0,
+  playerX = -7,
+  flapPulse = 0,
+  difficulty = 'normal';
+let run = null,
+  ticket = null,
+  inputs = [],
+  pendingFlap = false,
+  settlement = null,
+  busy = false,
+  social,
+  duel = null,
+  duelBusy = false,
+  duelFinalPending = false,
+  dance = 0,
+  fireworkTimer = 0;
+const departedRooms = new Set();
+const gates = new Map(),
+  tokens = new Map(),
+  particles = [];
+const bestRecord = () => save.best[`${MAPS[mapIndex].id}:${difficulty}`] || 0;
+function toast(text) {
+  $('toast').textContent = text;
+  $('toast').classList.add('visible');
+  clearTimeout(toast.timer);
+  toast.timer = setTimeout(() => $('toast').classList.remove('visible'), 3600);
+}
+function setState(next) {
+  state = next;
+  document.body.className = next;
+  $('menu').hidden = next !== 'menu';
+  $('hud').hidden = next === 'menu';
+  $('modal').hidden = !['paused', 'over'].includes(next);
+  $('countdown').hidden = next !== 'countdown';
+  $('pause').textContent = duel ? 'SAIR DO DUELO' : 'Ⅱ PAUSAR';
+}
+function resize() {
+  halfWidth = (10 * innerWidth) / innerHeight;
+  Object.assign(camera, {left: -halfWidth, right: halfWidth, top: 10, bottom: -10});
+  camera.updateProjectionMatrix();
+  camera.position.set(0, 5.5, 32);
+  camera.lookAt(0, 1, 0);
+  renderer.setSize(innerWidth, innerHeight);
+  playerX = -halfWidth * (innerWidth <= 680 ? 0.48 : 0.42);
+}
+function quality() {
+  renderer.setPixelRatio(Math.min(devicePixelRatio, save.low ? 1 : 1.7));
+  renderer.shadowMap.enabled = !save.low;
+  $('quality').textContent = save.low ? '3D LEVE' : '3D ALTO';
+  resize();
+}
+function refreshUI() {
+  const map = MAPS[mapIndex],
+    data = PIGS[charIndex],
+    locked = data.cost && !save.unlocked.includes(data.id);
+  $('wallet').textContent = save.coins;
+  $('pig-name').textContent = data.name;
+  $('selected-name').textContent = data.name;
+  $('selected-desc').textContent = data.desc;
+  $('selected-cost').textContent = locked ? `${data.cost} moedas para liberar` : '';
+  $('pig-desc').textContent = data.desc;
+  $('pig-cost').textContent = locked ? `DESBLOQUEIE POR ${data.cost} MOEDAS` : '';
+  $('map-tag').textContent = map.tag;
+  $('map-desc').textContent = map.desc;
+  $('scene-caption').textContent = map.caption;
+  $('record').textContent = `RECORDE • ${map.short}: ${bestRecord()}`;
+  const mapLocked = map.cost && !save.maps.includes(map.id);
+  $('play').innerHTML = mapLocked
+    ? `LIBERAR ${map.short} · ${map.cost} ◉ <span>↗</span>`
+    : locked
+      ? `DESBLOQUEAR · ${data.cost} ◉ <span>↗</span>`
+      : 'DECOLAR AGORA <span>↗</span>';
+  $('sound').textContent = save.muted ? 'SOM OFF' : 'SOM ON';
+  $('maps').innerHTML = MAPS.map(
+    (m, i) =>
+      `<button class="map ${i === mapIndex ? 'selected' : ''}" data-map="${i}" aria-pressed="${i === mapIndex}"><span class="map-icon">${m.icon}</span><b>${m.name}</b><small>${m.cost && !save.maps.includes(m.id) ? `🔒 ${m.cost} moedas` : '✓ LIBERADO'}</small></button>`,
+  ).join('');
+  $('characters').innerHTML = PIGS.map(
+    (p, i) =>
+      `<button class="character ${i === charIndex ? 'selected' : ''}" data-char="${i}" aria-pressed="${i === charIndex}"><span class="avatar">${p.icon}</span><span><b>${p.name}</b><small>${p.cost && !save.unlocked.includes(p.id) ? `◉ ${p.cost} para liberar` : p.label.replace(/\d+ moedas/, 'LIBERADO')}</small></span></button>`,
+  ).join('');
+  $('collection-grid').innerHTML = $('characters').innerHTML;
+  $('open-collection').textContent =
+    `VER OS ${PIGS.length} PORCOS · ${charIndex + 1}/${PIGS.length} ↗`;
+}
+function switchMap(index) {
+  mapIndex = index;
+  if (world) disposeGroup(world.group);
+  world = buildWorld(scene, MAPS[index]);
+  refreshUI();
+}
+function switchPig(index) {
+  charIndex = index;
+  if (pig) disposeGroup(pig);
+  pig = makePig(PIGS[index]);
+  scene.add(pig);
+  refreshUI();
+}
+function clearRun() {
+  for (const collection of [gates, tokens]) {
+    collection.forEach(m => disposeGroup(m));
+    collection.clear();
+  }
+  particles.forEach(p => disposeGroup(p.mesh));
+  particles.length = 0;
+}
+function prepare(t, duelMode = false) {
+  clearRun();
+  ticket = t;
+  run = createRun(t.seed, t.level, duelMode);
+  inputs = [];
+  pendingFlap = false;
+  settlement = null;
+  accumulator = 0;
+  dance = 0;
+  $('six-seven').hidden = true;
+  flapPulse = 0;
+  pig.scale.setScalar(0.68);
+  pig.rotation.set(0, 0.2, 0);
+  pig.visible = true;
+  $('score').textContent = '0';
+  $('run-coins').textContent = '0';
+  $('flight-map').textContent = `${MAPS[mapIndex].name} · ${DIFFICULTY_NAMES[difficulty]}`;
+  $('rival-distance').hidden = !duelMode;
+  music.theme();
+  audio.unlock();
+  document.activeElement?.blur();
+}
+async function start() {
+  if (busy) return;
+  if (social?.hasRoom()) {
+    social.showRoom();
+    toast('Saia da sala antes de iniciar um voo solo.');
+    return;
+  }
+  audio.unlock();
+  music.unlock();
+  busy = true;
+  $('play').disabled = true;
+  $('retry').disabled = true;
+  try {
+    if (settlement) await settlement;
+    const map = MAPS[mapIndex],
+      data = PIGS[charIndex],
+      kind = map.cost && !save.maps.includes(map.id) ? 'map' : 'skin',
+      item = kind === 'map' ? map : data;
+    if (item.cost && !(kind === 'map' ? save.maps : save.unlocked).includes(item.id)) {
+      await session.buy(item, kind);
+      toast(`${item.name} liberado!`);
+      return;
+    }
+    duel = null;
+    prepare(await session.begin(map.id, data.id, difficulty));
+    setState('playing');
+    audio.play('flap');
+  } catch (e) {
+    toast(e.message);
+  } finally {
+    busy = false;
+    $('play').disabled = false;
+    $('retry').disabled = false;
+  }
+}
+async function settle(quit = false) {
+  if (!run || !ticket || duel) return;
+  settlement = session.settle(ticket, run, [...inputs], quit);
+  return settlement;
+}
+function updateContinue() {
+  const allowed = run && !duel && run.dead && run.reason !== 'limit' && run.continues < 3;
+  $('continue-run').hidden = !allowed;
+  if (allowed) {
+    const price = continuePrice(run.continues);
+    $('continue-run').textContent = `CONTINUAR · ${price} ◉`;
+    $('continue-run').disabled = save.coins < price;
+    $('continue-note').textContent =
+      save.coins < price
+        ? `Faltam ${price - save.coins} moedas.`
+        : '1,5 s de proteção. Voos com continue não entram no ranking global.';
+  } else
+    $('continue-note').textContent = duel
+      ? 'No duelo, não há continue. Aguarde o outro jogador.'
+      : '';
+}
+async function end() {
+  if (state !== 'playing') return;
+  setState('over');
+  music.fail();
+  $('modal-eyebrow').textContent = duel ? 'DUELO EM ANDAMENTO' : 'POUSO NÃO PROGRAMADO';
+  $('modal-title').textContent = run.reason === 'limit' ? 'Voo concluído!' : 'Deu ruim, parceiro!';
+  $('modal-text').textContent = `${save.nickname}, você atravessou ${run.passed} canos.`;
+  $('results').hidden = false;
+  $('result-score').textContent = run.passed;
+  $('result-coins').textContent = run.coins;
+  $('result-best').textContent = bestRecord();
+  $('resume').hidden = true;
+  $('retry').hidden = !!duel;
+  $('continue-run').hidden = true;
+  $('continue-note').textContent = duel
+    ? 'Aguardando o resultado do duelo…'
+    : 'Salvando a partida…';
+  burst(pig.position, 0xf5b3a9, 16);
+  if (duel) {
+    await sendDuel(true);
+    return;
+  }
+  try {
+    await settle();
+    $('result-best').textContent = bestRecord();
+    updateContinue();
+  } catch (e) {
+    $('continue-note').textContent =
+      'Não foi possível salvar. Voltar ou tentar novamente fará uma nova tentativa.';
+    settlement = null;
+    ticket.needsSettle = true;
+    toast(e.message);
+  }
+}
+async function continueRun() {
+  if (busy || state !== 'over' || !run?.dead || duel) return;
+  busy = true;
+  $('continue-run').disabled = true;
+  try {
+    if (settlement) await settlement;
+    await session.continue(ticket, run);
+    revive(run);
+    syncEntities();
+    settlement = null;
+    accumulator = 0;
+    pendingFlap = false;
+    pig.rotation.set(0, 0.2, 0);
+    pig.visible = true;
+    music.theme();
+    setState('playing');
+    document.activeElement?.blur();
+    toast('Bora! Proteção por 1,5 segundo.');
+  } catch (e) {
+    toast(e.message);
+  } finally {
+    busy = false;
+    if (state === 'over') updateContinue();
+  }
+}
+function pause() {
+  if (state !== 'playing') return;
+  if (duel) {
+    forfeit();
+    return;
+  }
+  setState('paused');
+  music.pause();
+  $('modal-eyebrow').textContent = 'PAUSA PRA RESENHA';
+  $('modal-title').textContent = 'Asinhas descansando.';
+  $('modal-text').textContent = 'Continue quando estiver pronto.';
+  $('results').hidden = true;
+  $('continue-run').hidden = true;
+  $('continue-note').textContent = '';
+  $('resume').hidden = false;
+  $('retry').hidden = true;
+}
+function resume() {
+  if (state !== 'paused') return;
+  accumulator = 0;
+  music.theme();
+  setState('playing');
+  document.activeElement?.blur();
+}
+async function home() {
+  if (busy) return;
+  busy = true;
+  try {
+    if (duel) {
+      const code = duel.code;
+      await session.call('leaveRoom', {code});
+      departedRooms.add(code);
+      social?.releaseRoom();
+      duel = null;
+    } else if (run && ['playing', 'paused'].includes(state)) {
+      await settle(true);
+    } else if (ticket?.needsSettle) {
+      await settle();
+      ticket.needsSettle = false;
+    } else if (settlement) {
+      await settlement;
+    }
+    music.stop();
+    clearRun();
+    run = null;
+    ticket = null;
+    settlement = null;
+    dance = 0;
+    $('six-seven').hidden = true;
+    setState('menu');
+    refreshUI();
+  } catch (e) {
+    toast(e.message);
+  } finally {
+    busy = false;
+  }
+}
+function flap() {
+  if (state !== 'playing') return;
+  pendingFlap = true;
+  flapPulse = 1;
+  audio.play('flap');
+}
+function burst(pos, color, n = 8) {
+  for (let i = 0; i < n; i++) {
+    const m = ball(scene, mat(color), pos.x, pos.y, pos.z, 0.06 + Math.random() * 0.06);
+    particles.push({
+      mesh: m,
+      v: new T.Vector3((Math.random() - 0.5) * 6, Math.random() * 5, (Math.random() - 0.5) * 4),
+      life: 0.9,
+    });
+  }
+}
+function celebrate() {
+  dance = 3.8;
+  fireworkTimer = 0;
+  $('six-seven').hidden = false;
+  music.sixSeven?.();
+  toast('67 canos! SIX SEVEN!');
+}
+function syncEntities() {
+  const gids = new Set(run.gates.map(g => g.id)),
+    tids = new Set(run.tokens.map(c => c.id));
+  for (const [id, m] of gates)
+    if (!gids.has(id)) {
+      disposeGroup(m);
+      gates.delete(id);
+    }
+  for (const [id, m] of tokens)
+    if (!tids.has(id)) {
+      if (m.position.x > playerX - 1.5) burst(m.position, 0xffde63, 4);
+      disposeGroup(m);
+      tokens.delete(id);
+    }
+  for (const g of run.gates) {
+    if (!gates.has(g.id))
+      gates.set(g.id, makeGate(scene, MAPS[mapIndex], g.center, g.gap, playerX + g.x));
+    gates.get(g.id).position.x = playerX + g.x;
+  }
+  for (const c of run.tokens) {
+    if (!tokens.has(c.id)) tokens.set(c.id, makeCoin(scene, playerX + c.x, c.y));
+    tokens.get(c.id).position.x = playerX + c.x;
+  }
+}
+function step() {
+  if (pendingFlap) {
+    inputs.push(run.tick);
+  }
+  const beforeCoins = run.coins,
+    beforePassed = run.passed;
+  const result = advance(run, pendingFlap);
+  pendingFlap = false;
+  if (run.coins > beforeCoins) audio.play('coin');
+  if (run.passed > beforePassed && run.passed % 3 === 0) toast(MEMES[run.passed % MEMES.length]);
+  $('score').textContent = run.passed;
+  $('run-coins').textContent = run.coins;
+  if (result.sixSeven) celebrate();
+  if (result.dead) end();
+}
+function handleRoom(room) {
+  if (!session.uid || departedRooms.has(room.code)) return;
+  if (room.state === 'cancelled') {
+    if (duel?.code === room.code) {
+      duel = null;
+      home();
+    }
+    return;
+  }
+  if (room.state === 'racing' && duel?.code !== room.code) {
+    duel = room;
+    difficulty = 'normal';
+    $('difficulty').value = 'normal';
+    switchMap(0);
+    if (PIGS[charIndex].cost && !save.unlocked.includes(PIGS[charIndex].id)) switchPig(0);
+    prepare({id: room.code, seed: room.seed, level: room.level, mapId: room.mapId}, true);
+    social?.hide();
+    setState('countdown');
+  }
+  if (duel?.code === room.code) {
+    duel = room;
+    const rival = Object.entries(room.players).find(([uid]) => uid !== session.uid)?.[1];
+    $('rival-distance').textContent = rival
+      ? `${rival.nickname}: ${rival.distance} canos`
+      : 'Aguardando rival';
+    if (room.state === 'finished') {
+      setState('over');
+      music.stop();
+      $('modal-eyebrow').textContent = 'RESULTADO DO DUELO';
+      $('modal-title').textContent =
+        room.winner === 'draw'
+          ? 'Empate na resenha!'
+          : room.winner === session.uid
+            ? 'Você venceu!'
+            : 'O rival voou mais!';
+      $('modal-text').textContent = Object.values(room.players)
+        .map(p => `${p.nickname}: ${p.distance} canos`)
+        .join(' • ');
+      $('results').hidden = true;
+      $('resume').hidden = true;
+      $('retry').hidden = true;
+      $('continue-run').hidden = true;
+      $('continue-note').textContent = 'Abra Duelo no menu para criar outra sala.';
+    }
+  }
+}
+async function sendDuel(final = false) {
+  if (!duel || !['racing', 'finished'].includes(duel.state)) return;
+  if (duelBusy) {
+    duelFinalPending ||= final;
+    return;
+  }
+  duelBusy = true;
+  try {
+    const data = {code: duel.code};
+    if (run && duel.state === 'racing' && (state === 'playing' || final)) {
+      Object.assign(data, {inputs: [...inputs], ticks: run.tick, quit: final});
+    }
+    const out = await session.call('duelTick', data);
+    if (duel?.code === data.code) handleRoom(out.room);
+  } catch (e) {
+    toast('Duelo: ' + e.message);
+  } finally {
+    duelBusy = false;
+    if (duelFinalPending) {
+      duelFinalPending = false;
+      sendDuel(true);
+    }
+  }
+}
+function forfeit() {
+  if (!duel || !run) return;
+  run.dead = true;
+  run.reason = 'quit';
+  if (state === 'playing') end();
+  else sendDuel(true);
+}
+setInterval(() => {
+  if (duel && duel.state === 'racing' && state !== 'countdown') sendDuel();
+}, 2200);
+function animate(now) {
+  requestAnimationFrame(animate);
+  const dt = Math.min((now - last) / 1000, 0.05);
+  last = now;
+  if (state === 'countdown') {
+    const seconds = Math.ceil((duel.startAt - session.now()) / 1000);
+    $('countdown').textContent = seconds > 0 ? seconds : 'VOA!';
+    if (seconds <= 0) {
+      setState('playing');
+      music.theme();
+    }
+  }
+  if (state === 'playing' && run) {
+    if (duel) {
+      const target = Math.max(0, Math.floor(((session.now() - duel.startAt) * 120) / 1000));
+      if (target - run.tick > 1200) {
+        forfeit();
+      } else {
+        let budget = 600;
+        while (run.tick < target && state === 'playing' && budget-- > 0) step();
+      }
+    } else {
+      accumulator += dt;
+      while (accumulator >= DT && state === 'playing') {
+        step();
+        accumulator -= DT;
+      }
+    }
+    syncEntities();
+    pig.position.set(playerX, run.y, 0);
+    pig.visible = !run.shield || Math.floor(time * 12) % 2 === 0;
+  }
+  if (state !== 'paused') {
+    time += dt;
+    world.update(
+      time,
+      dt,
+      state === 'playing',
+      run ? LEVELS[run.level].speed + Math.min(run.passed * 0.04, LEVELS[run.level].boost) : 0,
+    );
+    flapPulse = Math.max(0, flapPulse - dt * 4);
+    animatePig(pig, {time, dt, state, velocity: run?.v || 0, pulse: flapPulse, dance});
+    tokens.forEach(c => (c.rotation.y += dt * 2));
+    if (dance > 0) {
+      dance -= dt;
+      fireworkTimer -= dt;
+      if (fireworkTimer <= 0) {
+        fireworkTimer = 0.24;
+        burst(
+          new T.Vector3((Math.random() - 0.5) * halfWidth * 1.3, 3 + Math.random() * 4, 1),
+          [0xffdf00, 0x50e3c2, 0xff71ab][Math.floor(Math.random() * 3)],
+          18,
+        );
+      }
+      if (dance <= 0) $('six-seven').hidden = true;
+    }
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+      p.life -= dt;
+      p.mesh.position.addScaledVector(p.v, dt);
+      p.v.y -= 5 * dt;
+      p.mesh.scale.setScalar(Math.max(0, p.life / 0.9));
+      if (p.life <= 0) {
+        disposeGroup(p.mesh);
+        particles.splice(i, 1);
+      }
+    }
+  }
+  if (state === 'menu') {
+    const compact = innerWidth <= 680,
+      freeTop = 125,
+      freeBottom = document.querySelector('.intro').getBoundingClientRect().top - 8,
+      region = Math.max(0, freeBottom - freeTop);
+    pig.visible = !compact || region > 55;
+    pig.scale.setScalar(compact ? Math.min(1.25, ((region / innerHeight) * 20) / 3.8) : 1.85);
+    const menuY = 1 + (0.5 - (freeTop + freeBottom) / 2 / innerHeight) * 20 + 0.6;
+    pig.position.set(
+      compact ? 0 : halfWidth * 0.48,
+      compact ? menuY : 2 + Math.sin(time * 2) * 0.13,
+      4,
+    );
+    pig.rotation.set(0.02, 0.24 + Math.sin(time * 0.6) * 0.16, 0.03);
+  }
+  renderer.render(scene, camera);
+}
+$('maps').onclick = e => {
+  const b = e.target.closest('[data-map]');
+  if (b) switchMap(Number(b.dataset.map));
+};
+$('characters').onclick = e => {
+  const b = e.target.closest('[data-char]');
+  if (b) switchPig(Number(b.dataset.char));
+};
+$('prev-char').onclick = () => switchPig((charIndex - 1 + PIGS.length) % PIGS.length);
+$('next-char').onclick = () => switchPig((charIndex + 1) % PIGS.length);
+$('play').onclick = start;
+$('retry').onclick = () => {
+  if (ticket?.needsSettle) {
+    settlement = settle();
+    ticket.needsSettle = false;
+  }
+  start();
+};
+$('continue-run').onclick = continueRun;
+$('pause').onclick = pause;
+$('resume').onclick = resume;
+$('home').onclick = home;
+$('sound').onclick = () => {
+  save.muted = !save.muted;
+  audio.muted = save.muted;
+  music.mute(save.muted);
+  if (!save.muted && state === 'playing') music.theme();
+  if (!session.user) session.saveGuest();
+  refreshUI();
+};
+$('quality').onclick = () => {
+  save.low = !save.low;
+  quality();
+  if (!session.user) session.saveGuest();
+};
+window.addEventListener('keydown', e => {
+  if (e.target.closest('input,select,textarea')) return;
+  if (['Escape', 'KeyP'].includes(e.code)) {
+    if (state === 'playing') pause();
+    else if (state === 'paused') resume();
+  }
+  if (['Space', 'ArrowUp'].includes(e.code) && state === 'playing') {
+    e.preventDefault();
+    if (!e.repeat) flap();
+  }
+});
+window.addEventListener(
+  'pointerdown',
+  () => {
+    audio.unlock();
+    music.unlock();
+  },
+  {once: true},
+);
+window.addEventListener('pointerdown', e => {
+  if (!e.target.closest('button,a,input,select,.social-overlay,#collection') && state === 'playing')
+    flap();
+});
+window.addEventListener('blur', () => {
+  if (!duel) pause();
+});
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    if (duel) forfeit();
+    else pause();
+  }
+});
+window.addEventListener('resize', () => {
+  if (state === 'playing' && !duel) pause();
+  resize();
+});
+$('world').addEventListener('webglcontextlost', e => {
+  e.preventDefault();
+  if (duel) forfeit();
+  else pause();
+  toast('O 3D foi interrompido. Recarregue para voltar.');
+});
+$('open-collection').onclick = () => {
+  $('collection').hidden = false;
+};
+$('close-collection').onclick = () => {
+  $('collection').hidden = true;
+};
+$('collection-grid').onclick = e => {
+  const b = e.target.closest('[data-char]');
+  if (b) {
+    switchPig(Number(b.dataset.char));
+    $('collection').hidden = true;
+  }
+};
+$('difficulty').onchange = e => {
+  difficulty = e.target.value;
+  refreshUI();
+};
+session.onChange = data => {
+  save = data;
+  refreshUI();
+  social?.render();
+};
+switchMap(0);
+switchPig(0);
+quality();
+setState('menu');
+social = socialUI(session, {
+  toast,
+  onRoom: handleRoom,
+  onLeave: () => {
+    duel = null;
+    home();
+  },
+});
+session.init();
+$('loading').remove();
+requestAnimationFrame(animate);

@@ -13,7 +13,8 @@ test('colisão exige sobreposição horizontal e vertical', () => {
 });
 
 test('impulso e gravidade são determinísticos: mesma entrada, mesmo resultado', () => {
-  const a = createRun(7), b = createRun(7);
+  const a = createRun(7),
+    b = createRun(7);
   for (let i = 0; i < 600; i++) {
     advance(a, i % 50 === 0);
     advance(b, i % 50 === 0);
@@ -30,9 +31,18 @@ test('replay do servidor reproduz um voo longo gerado pelo cliente', () => {
 });
 
 test('catálogo do servidor e config do cliente concordam em ids e preços', () => {
-  assert.deepEqual(PIGS.map((p) => [p.id, p.cost]), SKINS.map((s) => [s.id, s.cost]));
-  assert.deepEqual(CLIENT_MAPS.map((m) => [m.id, m.cost]), MAPS.map((m) => [m.id, m.cost]));
+  assert.deepEqual(
+    PIGS.map(p => [p.id, p.cost]),
+    SKINS.map(s => [s.id, s.cost]),
+  );
+  assert.deepEqual(
+    CLIENT_MAPS.map(m => [m.id, m.cost]),
+    MAPS.map(m => [m.id, m.cost]),
+  );
   assert.equal(PIGS.length, 21);
-  assert.equal(new Set(PIGS.map((p) => p.id)).size, 21);
-  assert.ok(PIGS.slice(0, 4).every((p) => p.cost === 0), 'quatro skins iniciais gratuitas');
+  assert.equal(new Set(PIGS.map(p => p.id)).size, 21);
+  assert.ok(
+    PIGS.slice(0, 4).every(p => p.cost === 0),
+    'quatro skins iniciais gratuitas',
+  );
 });

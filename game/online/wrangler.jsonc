@@ -1,7 +1,12 @@
 {
- "name":"voaporco-online", "main":"worker.js", "compatibility_date":"2026-10-01",
- "compatibility_flags":["nodejs_compat"], "workers_dev":true,
- "vars":{"ALLOWED_ORIGINS":"https://paraujozr.github.io,http://127.0.0.1:5174,http://127.0.0.1:5176,http://127.0.0.1:5181,http://127.0.0.1:5175,http://localhost:5174"},
- "durable_objects":{"bindings":[{"name":"GAME","class_name":"GameServer"}]},
- "migrations":[{"tag":"v1","new_sqlite_classes":["GameServer"]}]
+  "name": "voaporco-online",
+  "main": "worker.js",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "vars": {
+    "ALLOWED_ORIGINS": "https://paraujozr.github.io,http://127.0.0.1:5174,http://127.0.0.1:5176,http://127.0.0.1:5181,http://127.0.0.1:5175,http://localhost:5174",
+  },
+  "durable_objects": {"bindings": [{"name": "GAME", "class_name": "GameServer"}]},
+  "migrations": [{"tag": "v1", "new_sqlite_classes": ["GameServer"]}],
 }

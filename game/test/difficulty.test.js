@@ -9,7 +9,8 @@ const order = ['easy', 'normal', 'hard'];
 test('cada nível tem nome e dificuldade crescente (velocidade, abertura, espaço, variação)', () => {
   assert.deepEqual(Object.keys(LEVELS).sort(), Object.keys(DIFFICULTY_NAMES).sort());
   for (let i = 1; i < order.length; i++) {
-    const a = LEVELS[order[i - 1]], b = LEVELS[order[i]];
+    const a = LEVELS[order[i - 1]],
+      b = LEVELS[order[i]];
     assert.ok(a.speed < b.speed, 'velocidade');
     assert.ok(a.gap[1] > b.gap[1] && a.gap[0] > b.gap[0], 'abertura');
     assert.ok(a.space[1] > b.space[1] && a.space[0] > b.space[0], 'espaçamento');
@@ -41,6 +42,6 @@ test('canos gerados respeitam limites de abertura, altura e variação em todos 
       }
     }
     assert.ok(all.length >= 20, `${id}: amostra suficiente`);
-    assert.ok(new Set(all.map((g) => g.gap.toFixed(2))).size > 15, `${id}: aberturas variam`);
+    assert.ok(new Set(all.map(g => g.gap.toFixed(2))).size > 15, `${id}: aberturas variam`);
   }
 });

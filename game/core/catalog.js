@@ -1,2 +1,29 @@
-export const SKINS=[{"id":"mandrake","cost":0},{"id":"clt","cost":0},{"id":"maker","cost":0},{"id":"obra","cost":0},{"id":"craque","cost":10},{"id":"praia","cost":15},{"id":"delivery","cost":20},{"id":"maromba","cost":30},{"id":"coroa","cost":60},{"id":"babe","cost":25},{"id":"porky","cost":30},{"id":"piggy","cost":40},{"id":"piglet","cost":35},{"id":"peppa","cost":40},{"id":"rabico","cost":45},{"id":"torresmo","cost":30},{"id":"gobbato","cost":50},{"id":"spiderham","cost":65},{"id":"waddles","cost":45},{"id":"hamm","cost":55},{"id":"hawk","cost":60}];
-export const MAPS=[{"id":"cipo","cost":0},{"id":"rio","cost":40},{"id":"brasilia","cost":90},{"id":"amazonia","cost":140}];
+export const SKINS = [
+  {id: 'mandrake', cost: 0},
+  {id: 'clt', cost: 0},
+  {id: 'maker', cost: 0},
+  {id: 'obra', cost: 0},
+  {id: 'craque', cost: 10},
+  {id: 'praia', cost: 15},
+  {id: 'delivery', cost: 20},
+  {id: 'maromba', cost: 30},
+  {id: 'coroa', cost: 60},
+  {id: 'babe', cost: 25},
+  {id: 'porky', cost: 30},
+  {id: 'piggy', cost: 40},
+  {id: 'piglet', cost: 35},
+  {id: 'peppa', cost: 40},
+  {id: 'rabico', cost: 45},
+  {id: 'torresmo', cost: 30},
+  {id: 'gobbato', cost: 50},
+  {id: 'spiderham', cost: 65},
+  {id: 'waddles', cost: 45},
+  {id: 'hamm', cost: 55},
+  {id: 'hawk', cost: 60},
+];
+export const MAPS = [
+  {id: 'cipo', cost: 0},
+  {id: 'rio', cost: 40},
+  {id: 'brasilia', cost: 90},
+  {id: 'amazonia', cost: 140},
+];
