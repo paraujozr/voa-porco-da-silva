@@ -1,8 +1,8 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {collide, createRun, advance, replay} from '../server/shared/engine.js';
+import {collide, createRun, advance, replay} from '../core/engine.js';
 import {MAPS as CLIENT_MAPS, PIGS} from '../src/config.js';
-import {MAPS, SKINS} from '../server/shared/catalog.js';
+import {MAPS, SKINS} from '../core/catalog.js';
 import {autopilot} from './helpers.js';
 
 test('colisão exige sobreposição horizontal e vertical', () => {

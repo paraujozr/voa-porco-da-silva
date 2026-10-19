@@ -2,7 +2,7 @@ import * as T from 'three';
 import './style.css';import './reference.css';import './voxel.css';import './social.css';
 import {MAPS,PIGS,MEMES,writeSave} from './config.js';
 import {DIFFICULTY_NAMES} from './difficulty.js';
-import {createRun,advance,revive,continuePrice,DT,MAX_TICKS,LEVELS} from '../server/shared/engine.js';
+import {createRun,advance,revive,continuePrice,DT,MAX_TICKS,LEVELS} from '../core/engine.js';
 import {Session} from './session.js';import {socialUI} from './social-ui.js';
 import {animatePig} from './animation.js';
 import {makePig,disposeGroup,mat,ball} from './pig.js';

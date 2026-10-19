@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createRun,advance,replay,revive,credit,freshProfile,roomResult,nickname,continuePrice} from '../shared/engine.js';
+import {createRun,advance,replay,revive,credit,freshProfile,roomResult,nickname,continuePrice} from '../core/engine.js';
 function fly(seed=19,goal=90){const run=createRun(seed,'easy'),inputs=[];let events=0;while(!run.dead&&run.distance<goal){const target=run.gates.find(g=>g.x> -1)?.center??1;const flap=run.y<target-.5&&run.v<0;if(flap)inputs.push(run.tick);events+=!!advance(run,flap).sixSeven;}return {run,inputs,events};}
 test('replay reproduz distância e moedas',()=>{const {run,inputs}=fly();const copy=replay({seed:run.seed,level:run.level,inputs,ticks:run.tick});for(const key of ['distance','coins','y','dead','passed'])assert.equal(copy[key],run[key]);});
 test('Six Seven dispara apenas no 67º cano, nunca aos 67 metros',()=>{const r=createRun();r.distance=67;r.passed=66;assert.equal(advance(r).sixSeven,false);r.gates=[{id:1,x:-1.59,center:1,gap:6,passed:false}];assert.equal(advance(r).sixSeven,true);assert.equal(r.passed,67);assert.equal(advance(r).sixSeven,false);});

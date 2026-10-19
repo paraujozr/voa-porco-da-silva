@@ -2,7 +2,7 @@
 import {initializeApp} from 'firebase-admin/app';
 import {getFirestore} from 'firebase-admin/firestore';
 import {onCall,HttpsError} from 'firebase-functions/v2/https';
-import {createHandlers} from './handlers.js';
+import {createHandlers} from '../core/handlers.js';
 initializeApp();
 const handlers=createHandlers(getFirestore(),HttpsError);
 const wrap=name=>onCall({region:'southamerica-east1',maxInstances:3,timeoutSeconds:30,memory:'256MiB'},req=>{

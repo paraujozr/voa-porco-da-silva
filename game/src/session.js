@@ -1,5 +1,5 @@
 import {readSave,writeSave} from './config.js';
-import {nickname,freshProfile,credit,continuePrice} from '../server/shared/engine.js';
+import {nickname,freshProfile,credit,continuePrice} from '../core/engine.js';
 import {CloudTransport} from './transport.js';
 export class Session {
  constructor(storage,onChange=()=>{}){

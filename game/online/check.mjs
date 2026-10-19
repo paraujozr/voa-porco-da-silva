@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {randomBytes} from 'node:crypto';
-import {createRun,advance} from '../server/shared/engine.js';
+import {createRun,advance} from '../core/engine.js';
 const base=process.env.ONLINE_TEST_URL||'http://127.0.0.1:8787';
 const call=async(name,data={},token)=>{const response=await fetch(`${base}/${name}`,{method:'POST',headers:{'Content-Type':'application/json',...(token?{Authorization:`Bearer ${token}`}:{})},body:JSON.stringify(data)});const result=await response.json();return {status:response.status,...result};};
 const name=`qa_${randomBytes(5).toString('hex')}`,pass=randomBytes(20).toString('hex');
@@ -10,7 +10,7 @@ const login=await call('login',{username:name.toUpperCase(),password:pass});asse
 assert.equal((await call('buyItem',{id:'delivery',kind:'skin'},login.token)).status,400);
 const runTicket=await call('beginRun',{mapId:'cipo',skinId:'worker',level:'normal'},login.token);
 // Free starter skin is resolved from authoritative catalog below if its id changes.
-if(runTicket.status!==200){const {SKINS}=await import('../server/shared/catalog.js');Object.assign(runTicket,await call('beginRun',{mapId:'cipo',skinId:SKINS.find(s=>!s.cost).id,level:'normal'},login.token));}
+if(runTicket.status!==200){const {SKINS}=await import('../core/catalog.js');Object.assign(runTicket,await call('beginRun',{mapId:'cipo',skinId:SKINS.find(s=>!s.cost).id,level:'normal'},login.token));}
 assert.equal(runTicket.status,200);
 const run=createRun(runTicket.seed,'normal');while(!run.dead)advance(run,false);
 await new Promise(resolve=>setTimeout(resolve,Math.max(0,run.tick/120*1000-1000)));

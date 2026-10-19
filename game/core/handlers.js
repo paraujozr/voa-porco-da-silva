@@ -1,9 +1,9 @@
 import {randomInt,randomUUID,createHash} from 'node:crypto';
-import {replay,LEVELS,continuePrice,nickname,freshProfile,credit,roomResult} from './shared/engine.js';
-import {SKINS,MAPS} from './shared/catalog.js';
-export function createHandlers(db, HttpsError) {
+import {replay,LEVELS,continuePrice,nickname,freshProfile,credit,roomResult} from './engine.js';
+import {SKINS,MAPS} from './catalog.js';
+export function createHandlers(db, ApiError) {
 const callable=fn=>fn;
-const fail=(message,code='failed-precondition')=>{throw new HttpsError(code,message);};
+const fail=(message,code='failed-precondition')=>{throw new ApiError(code,message);};
 const profileRef=uid=>db.doc(`profiles/${uid}`),runRef=id=>db.doc(`runs/${id}`),roomRef=code=>db.doc(`rooms/${code}`);
 const hash=inputs=>createHash('sha256').update(JSON.stringify(inputs)).digest('hex');
 const id=value=>{if(typeof value!=='string'||! /^[a-zA-Z0-9_-]{1,80}$/.test(value))fail('Identificador inválido','invalid-argument');return value;};

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {initializeApp} from 'firebase-admin/app';
 import {getFirestore} from 'firebase-admin/firestore';
-import {createRun,advance} from '../shared/engine.js';
+import {createRun,advance} from '../core/engine.js';
 if(process.env.FIRESTORE_EMULATOR_HOST!=='127.0.0.1:8080')throw Error('Teste permitido apenas no emulador local.');
 initializeApp({projectId:'demo-voaporco'});const db=getFirestore();
 async function user(){const r=await fetch('http://127.0.0.1:9099/identitytoolkit.googleapis.com/v1/accounts:signUp?key=demo',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:`qa-${crypto.randomUUID()}@example.test`,password:crypto.randomUUID(),returnSecureToken:true})});const d=await r.json();assert.ok(d.idToken);return d;}

@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {LEVELS, createRun, advance} from '../server/shared/engine.js';
+import {LEVELS, createRun, advance} from '../core/engine.js';
 import {DIFFICULTY_NAMES} from '../src/difficulty.js';
 import {autopilot} from './helpers.js';
 

@@ -1,4 +1,4 @@
-import {createRun, advance} from '../server/shared/engine.js';
+import {createRun, advance} from '../core/engine.js';
 
 // Naive autopilot: flaps whenever the pig sinks below the centre of the next gate.
 export function autopilot(seed = 19, level = 'easy', {maxTicks = 120 * 120, goal = Infinity} = {}) {

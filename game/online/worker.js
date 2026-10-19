@@ -1,7 +1,7 @@
 import {DurableObject} from 'cloudflare:workers';
 import {randomUUID} from 'node:crypto';
-import {createHandlers} from '../server/handlers.js';
-import {freshProfile,nickname,LEVELS} from '../server/shared/engine.js';
+import {createHandlers} from '../core/handlers.js';
+import {freshProfile,nickname,LEVELS} from '../core/engine.js';
 import {Store} from './store.js';
 import {ApiError,digest,secret,username,password,hashPassword,checkPassword} from './auth.js';
 const GUEST_METHODS=new Set(['ensureProfile','setNickname','createRoom','joinRoom','readyRoom','duelTick','leaveRoom','socketTicket','me']);
@@ -56,7 +56,7 @@ export class GameServer extends DurableObject {
   const method=url.pathname.slice(1),ip=request.headers.get('CF-Connecting-IP')||'local';
   this.db.cleanup();if(authMethods.has(method))return Response.json({...await this.authenticate(method,data,ip),serverNow:Date.now()});
   if(method==='board'){this.limit(`board:${ip}`,120);if(!Object.hasOwn(LEVELS,data.level))throw new ApiError('invalid-argument','Dificuldade inválida.');return Response.json(this.db.board(data.level));}
-  const token=request.headers.get('Authorization')?.replace(/^Bearer /,''),s=this.session(token);if(s.ticket)throw new ApiError('unauthenticated','Token inv�lido.');
+  const token=request.headers.get('Authorization')?.replace(/^Bearer /,''),s=this.session(token);if(s.ticket)throw new ApiError('unauthenticated','Token inválido.');
   this.limit(`api:${s.uid}`,180);if(s.guest&&!GUEST_METHODS.has(method)&&method!=='logout')throw new ApiError('permission-denied','Entre numa conta para salvar na nuvem.');
   let result;
   if(method==='logout'){this.db.delete(`sessions/${digest(token)}`);for(const socket of this.ctx.getWebSockets())if(socket.deserializeAttachment()?.session===digest(token))socket.close(1000,'Saiu');result={};}
