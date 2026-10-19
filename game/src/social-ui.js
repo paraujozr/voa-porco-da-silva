@@ -1,5 +1,5 @@
 import {PIGS} from './config.js';
-const $ = id => document.getElementById(id);
+import {$} from './dom.js';
 export function socialUI(session, {toast, onRoom, onLeave}) {
   let unsubBoard,
     unsubRoom,
