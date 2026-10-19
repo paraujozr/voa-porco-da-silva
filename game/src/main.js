@@ -1,7 +1,7 @@
 import * as T from 'three';
 import './style.css';import './reference.css';import './voxel.css';import './social.css';
 import {MAPS,PIGS,MEMES,writeSave} from './config.js';
-import {DIFFICULTIES} from './difficulty.js';
+import {DIFFICULTY_NAMES} from './difficulty.js';
 import {createRun,advance,revive,continuePrice,DT,MAX_TICKS,LEVELS} from '../server/shared/engine.js';
 import {Session} from './session.js';import {socialUI} from './social-ui.js';
 import {animatePig} from './animation.js';
@@ -30,7 +30,7 @@ function refreshUI(){const map=MAPS[mapIndex],data=PIGS[charIndex],locked=data.c
 function switchMap(index){mapIndex=index;if(world)disposeGroup(world.group);world=buildWorld(scene,MAPS[index]);refreshUI();}
 function switchPig(index){charIndex=index;if(pig)disposeGroup(pig);pig=makePig(PIGS[index]);scene.add(pig);refreshUI();}
 function clearRun(){for(const collection of [gates,tokens]){collection.forEach(m=>disposeGroup(m));collection.clear();}particles.forEach(p=>disposeGroup(p.mesh));particles.length=0;}
-function prepare(t,duelMode=false){clearRun();ticket=t;run=createRun(t.seed,t.level,duelMode);inputs=[];pendingFlap=false;settlement=null;accumulator=0;dance=0;$('six-seven').hidden=true;flapPulse=0;pig.scale.setScalar(.68);pig.rotation.set(0,.2,0);pig.visible=true;$('score').textContent='0';$('run-coins').textContent='0';$('flight-map').textContent=`${MAPS[mapIndex].name} · ${DIFFICULTIES[difficulty].name}`;$('rival-distance').hidden=!duelMode;music.theme();audio.unlock();document.activeElement?.blur();}
+function prepare(t,duelMode=false){clearRun();ticket=t;run=createRun(t.seed,t.level,duelMode);inputs=[];pendingFlap=false;settlement=null;accumulator=0;dance=0;$('six-seven').hidden=true;flapPulse=0;pig.scale.setScalar(.68);pig.rotation.set(0,.2,0);pig.visible=true;$('score').textContent='0';$('run-coins').textContent='0';$('flight-map').textContent=`${MAPS[mapIndex].name} · ${DIFFICULTY_NAMES[difficulty]}`;$('rival-distance').hidden=!duelMode;music.theme();audio.unlock();document.activeElement?.blur();}
 async function start(){if(busy)return;if(social?.hasRoom()){social.showRoom();toast('Saia da sala antes de iniciar um voo solo.');return;}audio.unlock();music.unlock();busy=true;$('play').disabled=true;$('retry').disabled=true;try{if(settlement)await settlement;const map=MAPS[mapIndex],data=PIGS[charIndex],kind=map.cost&&!save.maps.includes(map.id)?'map':'skin',item=kind==='map'?map:data;if(item.cost&&!(kind==='map'?save.maps:save.unlocked).includes(item.id)){await session.buy(item,kind);toast(`${item.name} liberado!`);return;}duel=null;prepare(await session.begin(map.id,data.id,difficulty));setState('playing');audio.play('flap');}catch(e){toast(e.message);}finally{busy=false;$('play').disabled=false;$('retry').disabled=false;}}
 async function settle(quit=false){if(!run||!ticket||duel)return;settlement=session.settle(ticket,run,[...inputs],quit);return settlement;}
 function updateContinue(){const allowed=run&&!duel&&run.dead&&run.reason!=='limit'&&run.continues<3;$('continue-run').hidden=!allowed;if(allowed){const price=continuePrice(run.continues);$('continue-run').textContent=`CONTINUAR · ${price} ◉`;$('continue-run').disabled=save.coins<price;$('continue-note').textContent=save.coins<price?`Faltam ${price-save.coins} moedas.`:'1,5 s de proteção. Voos com continue não entram no ranking global.';}else $('continue-note').textContent=duel?'No duelo, não há continue. Aguarde o outro jogador.':'';}

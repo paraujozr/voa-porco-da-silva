@@ -29,9 +29,5 @@ pig('hamm','Porquinho (Hamm)','TOY STORY','Hoje o cofrinho vai atrás das moedas
 pig('hawk','Hawk','CAPITÃO DAS SOBRAS','Fiscal oficial do rango e da resenha.',0xe9a6ae,0xe9a6ae,60,'Pop')
 ];
 export const MEMES=['RECEBA!','BORA, BILL!','O PAI TÁ ON','CALMA, CALABRESO','É SOBRE ISSO','SEXTOU!','LÁ ELE!','TÁ PAGO!','SÓ MAIS UMA','AMOSTRADINHO','CÊ É O BICHÃO','QUE SHOW DA XUXA!','CANETA AZUL','OLHA A COBRA! É MENTIRA!','É PAVÊ OU PACUMÊ?','NA VOLTA A GENTE COMPRA','NÃO É MOLE NÃO'];
-export const STEP=1/120;
-export function integrate(y,velocity,dt){const v=velocity-19*dt;return {y:y+v*dt,velocity:v};}
-export function hitGate(x,y,gate){const cx=x+.1,cy=y+.05,r=.65;for(const side of [-1,1]){const edge=gate.center+side*gate.gap/2;const minY=side<0?edge-30:edge,maxY=side<0?edge:edge+30;const nx=Math.max(gate.x-.96,Math.min(cx,gate.x+.96)),ny=Math.max(minY,Math.min(cy,maxY));if((cx-nx)**2+(cy-ny)**2<r*r)return true;}return false;}
 export function readSave(storage){const base={coins:0,best:{},unlocked:[],maps:['cipo'],muted:false,low:false};try{const s=JSON.parse(storage.getItem('voaporco-beta-save')||'{}');if(!s||typeof s!=='object')return base;const legacy=Math.max(0,Number(storage.getItem('voaPorcoBest'))||0);return {coins:Number.isFinite(Number(s.coins))?Math.max(0,Math.floor(Number(s.coins))):0,best:s.best&&typeof s.best==='object'?s.best:{rio:legacy},unlocked:Array.isArray(s.unlocked)?s.unlocked:[],maps:[...new Set(['cipo',...(Array.isArray(s.maps)?s.maps:[])])],muted:!!s.muted,low:!!s.low};}catch{return base;}}
 export function writeSave(storage,data){try{storage.setItem('voaporco-beta-save',JSON.stringify(data));return true;}catch{return false;}}
-export function purchase(save,item,kind){const key=kind==='map'?'maps':'unlocked';if(!item.cost||save[key].includes(item.id))return 'owned';if(save.coins<item.cost)return 'insufficient';save.coins-=item.cost;save[key].push(item.id);return 'purchased';}
