@@ -1,8 +1,8 @@
-import {readSave, writeSave} from './config.js';
-import {nickname, freshProfile, credit, continuePrice} from '../core/engine.js';
+import {loadGuestProfile, saveGuestProfile} from './guest-profile.js';
+import {nickname, credit, continuePrice} from '../core/engine.js';
 import {CloudTransport} from './transport.js';
 export class Session {
-  constructor(storage, onChange = () => {}) {
+  constructor(storage, {url = '', onChange = () => {}} = {}) {
     this.storage = storage;
     this.onChange = onChange;
     this.user = null;
@@ -12,52 +12,16 @@ export class Session {
     this.data = this.guest;
     this.accountReady = false;
     this.cloudError = '';
-    this.cloud = new CloudTransport(import.meta.env.VITE_ONLINE_URL || '', storage, p => {
+    this.cloud = new CloudTransport(url, storage, p => {
       if (this.user) this.adopt(p);
     });
     this.configured = !!this.cloud.url;
-    this.emulated = import.meta.env.DEV;
   }
   loadGuest() {
-    const old = readSave(this.storage);
-    let meta = {};
-    try {
-      meta =
-        JSON.parse(this.storage.getItem('voaporco-guest-profile-canos') || 'null') ||
-        (() => {
-          const previous = JSON.parse(this.storage.getItem('voaporco-guest-profile') || '{}');
-          return {...previous, best: null, ranked: {}};
-        })();
-    } catch {}
-    return {
-      ...freshProfile(meta.nickname || 'Porco Visitante'),
-      ...old,
-      legacyBest: old.best,
-      best:
-        meta.best ||
-        Object.fromEntries(
-          Object.entries(old.best).map(([k, v]) => [k.includes(':') ? k : `${k}:normal`, v]),
-        ),
-      ranked: meta.ranked || {},
-      totalCoins: meta.totalCoins || old.coins,
-      runs: meta.runs || 0,
-      nickname: meta.nickname || 'Porco Visitante',
-    };
+    return loadGuestProfile(this.storage);
   }
   saveGuest() {
-    writeSave(this.storage, {...this.data, best: this.data.legacyBest || {}});
-    try {
-      this.storage.setItem(
-        'voaporco-guest-profile-canos',
-        JSON.stringify({
-          nickname: this.data.nickname,
-          best: this.data.best,
-          ranked: this.data.ranked,
-          totalCoins: this.data.totalCoins,
-          runs: this.data.runs,
-        }),
-      );
-    } catch {}
+    saveGuestProfile(this.storage, this.data);
     this.guest = this.data;
   }
   changed() {

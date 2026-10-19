@@ -297,7 +297,7 @@ export function readSave(storage) {
     const legacy = Math.max(0, Number(storage.getItem('voaPorcoBest')) || 0);
     return {
       coins: Number.isFinite(Number(s.coins)) ? Math.max(0, Math.floor(Number(s.coins))) : 0,
-      best: s.best && typeof s.best === 'object' ? s.best : {rio: legacy},
+      best: s.best && typeof s.best === 'object' ? s.best : legacy > 0 ? {rio: legacy} : {},
       unlocked: Array.isArray(s.unlocked) ? s.unlocked : [],
       maps: [...new Set(['cipo', ...(Array.isArray(s.maps) ? s.maps : [])])],
       muted: !!s.muted,

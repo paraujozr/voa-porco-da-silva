@@ -16,7 +16,7 @@ export function socialUI(session, {toast, onRoom, onLeave}) {
     try {
       await fn();
     } catch (e) {
-      toast(e.message.replace(/^Firebase: /, ''));
+      toast(e.message);
     } finally {
       if (button) button.disabled = false;
       render();

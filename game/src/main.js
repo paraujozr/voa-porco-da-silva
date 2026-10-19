@@ -18,7 +18,7 @@ try {
   storage = {getItem: () => null, setItem: () => {}};
 }
 
-const session = new Session(storage);
+const session = new Session(storage, {url: import.meta.env.VITE_ONLINE_URL});
 const audio = new AudioSystem(session.data.muted);
 const music = new MusicPlayer(session.data.muted, () => audio.fahh());
 decorateFestival();
