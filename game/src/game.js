@@ -208,11 +208,10 @@ export class Game {
 
   // Closes the topmost open dialog (menu or social). Returns whether one was open.
   closeOpenDialog() {
-    const open = [...document.querySelectorAll('.dialog, .social-overlay')].filter(d => !d.hidden);
+    const open = [...document.querySelectorAll('.dialog')].filter(d => !d.hidden);
     const top = open.at(-1);
     if (!top) return false;
-    top.querySelector('.close-btn, .close-social')?.click();
-    if (!top.hidden && top.classList.contains('dialog')) top.hidden = true;
+    top.querySelector('.close-btn')?.click();
     return true;
   }
 

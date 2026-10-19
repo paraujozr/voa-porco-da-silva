@@ -37,7 +37,7 @@ export function bindControls(game) {
     close.onclick = () => game.closePanel(close.dataset.close);
   for (const dialog of document.querySelectorAll('.dialog'))
     dialog.addEventListener('pointerdown', e => {
-      if (e.target === dialog) game.closePanel(dialog.id);
+      if (e.target === dialog) dialog.querySelector('.close-btn')?.click();
     });
   $('porco-action').onclick = () => game.pigAction();
   $('map-action').onclick = () => game.mapAction();
@@ -68,7 +68,7 @@ export function bindControls(game) {
     {once: true},
   );
   window.addEventListener('pointerdown', e => {
-    const onUI = e.target.closest('button,a,input,select,.dialog,.social-overlay');
+    const onUI = e.target.closest('button,a,input,select,.dialog');
     if (!onUI && game.state === STATE.PLAYING) game.flap();
   });
 

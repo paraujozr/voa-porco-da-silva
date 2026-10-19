@@ -62,10 +62,10 @@ export function socialUI(session, {toast, onRoom, onLeave}) {
     $('auth-password').autocomplete = value === 'login' ? 'current-password' : 'new-password';
     $('account-submit').textContent =
       value === 'register'
-        ? 'CRIAR MEU PERFIL ↗'
+        ? 'CRIAR MEU PERFIL'
         : value === 'recover'
           ? 'REDEFINIR SENHA'
-          : 'ENTRAR NO HANGAR ↗';
+          : 'ENTRAR';
     $('recovery-input-wrap').hidden = value !== 'recover';
     $('auth-recovery').required = value === 'recover';
     $('auth-status').textContent =
@@ -143,7 +143,7 @@ export function socialUI(session, {toast, onRoom, onLeave}) {
           row.className = i < 3 ? `podium-place place-${i + 1}` : 'ranking-row';
           const name = document.createElement('strong'),
             score = document.createElement('span');
-          name.textContent = `${i < 3 ? ['🥇', '🥈', '🥉'][i] : `${i + 1}.`} ${p.nickname}`;
+          name.textContent = `#${i + 1} ${p.nickname}`;
           score.textContent = `${p.distance} canos`;
           row.append(name, score);
           (i < 3 ? $('podium') : $('ranking-list')).append(row);

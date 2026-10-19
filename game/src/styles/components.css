@@ -9,6 +9,8 @@
 
 /* ---- field ---- */
 .field,
+input,
+textarea,
 select,
 .wallet,
 .build {
@@ -105,4 +107,31 @@ button:disabled {
   padding: 4px 10px;
   font-size: 18px;
   letter-spacing: 0;
+}
+
+/* ---- form controls ---- */
+input,
+textarea,
+select {
+  width: 100%;
+  padding: 4px 8px;
+  font-family: var(--font-ui);
+  font-size: 20px;
+  color: var(--ink);
+}
+input::placeholder,
+textarea::placeholder {
+  color: #6f96a3;
+}
+select {
+  appearance: none;
+  padding-right: 34px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='7' height='4' shape-rendering='crispEdges'%3E%3Cpath fill='%23ffdf00' d='M0 0h7v1H6v1H5v1H4v1H3V3H2V2H1V1H0z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 14px 8px;
+}
+select option {
+  background: #0b222c;
+  color: var(--ink);
 }

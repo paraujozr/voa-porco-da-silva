@@ -126,9 +126,106 @@
     <button id="home" class="secondary">VOLTAR AO MENU</button>
   </div>
 </section>
-<section id="profile-panel" class="social-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="profile-title"><div class="social-card"><button id="profile-close" class="close-social" aria-label="Fechar perfil">✕</button><span class="social-kicker">SEU PASSAPORTE PARA O CÉU</span><h2 id="profile-title">Bora voar, <span id="profile-name">Porco Visitante</span>?</h2><p id="profile-mode"></p><form id="nickname-form"><label for="nickname">Seu apelido</label><div class="nickname-row"><input id="nickname" maxlength="18" minlength="3" autocomplete="nickname" required><button id="nickname-save" class="secondary" type="submit">SALVAR</button></div></form><div class="profile-stats"><div><small>MAIOR PONTUAÇÃO</small><strong id="profile-best">0 canos</strong></div><div><small>MOEDAS DISPONÍVEIS</small><strong id="profile-coins">0</strong></div><div><small>SKINS ADQUIRIDAS</small><strong id="profile-skins">4 / 21</strong></div><div><small>MOEDAS COLETADAS</small><strong id="profile-earned">0</strong></div><div><small>PARTIDAS</small><strong id="profile-runs">0</strong></div></div><form id="account-form"><div class="auth-tabs"><button type="button" id="auth-login" class="secondary" aria-pressed="true">ENTRAR</button><button type="button" id="auth-register" class="secondary" aria-pressed="false">CRIAR CONTA</button></div><label for="auth-username">Nome de usuário</label><input id="auth-username" name="username" autocomplete="username" minlength="3" maxlength="18" pattern="[a-zA-Z0-9_]{3,18}" placeholder="seu_nome" required><label for="auth-password">Senha</label><input id="auth-password" name="password" type="password" autocomplete="current-password" minlength="12" maxlength="128" placeholder="Pelo menos 12 caracteres" required><div id="recovery-input-wrap" hidden><label for="auth-recovery">Código de recuperação</label><input id="auth-recovery" autocomplete="off" maxlength="64"></div><button id="account-submit" class="primary" type="submit">ENTRAR NO HANGAR ↗</button><button id="auth-recover" type="button" class="text-action">Esqueci minha senha</button><p id="auth-status" role="status" class="social-note"></p></form><div id="recovery-panel" hidden><strong>Guarde seu código de recuperação</strong><p>Ele permite redefinir a senha sem e-mail. Salve em um lugar seguro. Não compartilhe.</p><textarea id="recovery-code" readonly aria-label="Código de recuperação"></textarea><button id="recovery-saved" class="secondary">JÁ GUARDEI</button></div><button id="quick-play" class="secondary">JOGAR RÁPIDO</button><button id="logout" class="secondary" hidden>SAIR DA CONTA</button><p id="cloud-note" class="social-note"></p></div></section>
-<section id="ranking-panel" class="social-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="ranking-title"><div class="social-card"><button id="ranking-close" class="close-social" aria-label="Fechar ranking">✕</button><span class="social-kicker">OS MAIS VOADOS DO BRASIL</span><h2 id="ranking-title">Pódio dos Porcos</h2><label for="ranking-level">Dificuldade</label><select id="ranking-level"><option value="easy">De boa</option><option value="normal" selected>Na raça</option><option value="hard">Sem dó</option></select><div id="podium"></div><ol id="ranking-list" start="4"></ol><p id="ranking-status" role="status"></p></div></section>
-<section id="duel-panel" class="social-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="duel-title"><div class="social-card"><button id="duel-close" class="close-social" aria-label="Fechar duelo">✕</button><span class="social-kicker">UM CÉU. DOIS PORCOS.</span><h2 id="duel-title">Duelo 1 × 1</h2><p id="room-hint"></p><button id="room-create" class="primary">CRIAR SALA PRIVADA ↗</button><label for="room-code">Ou entre com o código do seu amigo</label><div class="nickname-row"><input id="room-code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="000000" autocomplete="off"><button id="room-join" class="secondary">ENTRAR</button></div><div id="room-lobby" hidden><strong id="room-code-display"></strong><p id="room-status" role="status"></p><div id="room-players"></div><button id="room-ready" class="primary">ESTOU PRONTO ✓</button><button id="room-leave" class="secondary">SAIR DA SALA</button></div><p class="social-note">Mesma sequência de obstáculos e largada sincronizada. Quem atravessar mais canos vence. Empates são possíveis. Desconexão por mais de 15 segundos encerra o voo na última pontuação validada.</p></div></section>
+<section id="profile-panel" class="dialog" hidden role="dialog" aria-modal="true" aria-labelledby="profile-title">
+  <div class="dialog-card">
+    <header class="dialog-head">
+      <div>
+        <span class="kicker">SEU PASSAPORTE PARA O CÉU</span>
+        <h2 id="profile-title">Bora voar, <span id="profile-name">Porco Visitante</span>?</h2>
+      </div>
+      <button id="profile-close" class="close-btn" aria-label="Fechar perfil"><span data-icon="close"></span></button>
+    </header>
+    <p id="profile-mode" class="social-note"></p>
+    <form id="nickname-form">
+      <label for="nickname">Seu apelido</label>
+      <div class="nickname-row">
+        <input id="nickname" maxlength="18" minlength="3" autocomplete="nickname" required />
+        <button id="nickname-save" class="secondary" type="submit">SALVAR</button>
+      </div>
+    </form>
+    <div class="profile-stats">
+      <div><small>MAIOR PONTUAÇÃO</small><strong id="profile-best">0 canos</strong></div>
+      <div><small>MOEDAS DISPONÍVEIS</small><strong id="profile-coins">0</strong></div>
+      <div><small>SKINS ADQUIRIDAS</small><strong id="profile-skins">4 / 21</strong></div>
+      <div><small>MOEDAS COLETADAS</small><strong id="profile-earned">0</strong></div>
+      <div><small>PARTIDAS</small><strong id="profile-runs">0</strong></div>
+    </div>
+    <form id="account-form">
+      <div class="auth-tabs">
+        <button type="button" id="auth-login" class="secondary" aria-pressed="true">ENTRAR</button>
+        <button type="button" id="auth-register" class="secondary" aria-pressed="false">CRIAR CONTA</button>
+      </div>
+      <label for="auth-username">Nome de usuário</label>
+      <input id="auth-username" name="username" autocomplete="username" minlength="3" maxlength="18" pattern="[a-zA-Z0-9_]{3,18}" placeholder="seu_nome" required />
+      <label for="auth-password">Senha</label>
+      <input id="auth-password" name="password" type="password" autocomplete="current-password" minlength="12" maxlength="128" placeholder="Pelo menos 12 caracteres" required />
+      <div id="recovery-input-wrap" hidden>
+        <label for="auth-recovery">Código de recuperação</label>
+        <input id="auth-recovery" autocomplete="off" maxlength="64" />
+      </div>
+      <button id="account-submit" class="primary" type="submit">ENTRAR</button>
+      <button id="auth-recover" type="button" class="text-action">Esqueci minha senha</button>
+      <p id="auth-status" role="status" class="social-note"></p>
+    </form>
+    <div id="recovery-panel" hidden>
+      <strong>Guarde seu código de recuperação</strong>
+      <p>Ele permite redefinir a senha sem e-mail. Salve em um lugar seguro. Não compartilhe.</p>
+      <textarea id="recovery-code" readonly aria-label="Código de recuperação"></textarea>
+      <button id="recovery-saved" class="secondary">JÁ GUARDEI</button>
+    </div>
+    <button id="quick-play" class="secondary">JOGAR RÁPIDO</button>
+    <button id="logout" class="secondary" hidden>SAIR DA CONTA</button>
+    <p id="cloud-note" class="social-note"></p>
+  </div>
+</section>
+
+<section id="ranking-panel" class="dialog" hidden role="dialog" aria-modal="true" aria-labelledby="ranking-title">
+  <div class="dialog-card">
+    <header class="dialog-head">
+      <div>
+        <span class="kicker">OS MAIS VOADOS DO BRASIL</span>
+        <h2 id="ranking-title">Pódio dos Porcos</h2>
+      </div>
+      <button id="ranking-close" class="close-btn" aria-label="Fechar ranking"><span data-icon="close"></span></button>
+    </header>
+    <label for="ranking-level">Dificuldade</label>
+    <select id="ranking-level">
+      <option value="easy">De boa</option>
+      <option value="normal" selected>Na raça</option>
+      <option value="hard">Sem dó</option>
+    </select>
+    <div id="podium"></div>
+    <ol id="ranking-list" start="4"></ol>
+    <p id="ranking-status" role="status" class="social-note"></p>
+  </div>
+</section>
+
+<section id="duel-panel" class="dialog" hidden role="dialog" aria-modal="true" aria-labelledby="duel-title">
+  <div class="dialog-card">
+    <header class="dialog-head">
+      <div>
+        <span class="kicker">UM CÉU. DOIS PORCOS.</span>
+        <h2 id="duel-title">Duelo 1 × 1</h2>
+      </div>
+      <button id="duel-close" class="close-btn" aria-label="Fechar duelo"><span data-icon="close"></span></button>
+    </header>
+    <p id="room-hint" class="social-note"></p>
+    <button id="room-create" class="primary">CRIAR SALA PRIVADA</button>
+    <label for="room-code">Ou entre com o código do seu amigo</label>
+    <div class="nickname-row">
+      <input id="room-code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="000000" autocomplete="off" />
+      <button id="room-join" class="secondary">ENTRAR</button>
+    </div>
+    <div id="room-lobby" hidden>
+      <strong id="room-code-display"></strong>
+      <p id="room-status" role="status"></p>
+      <div id="room-players"></div>
+      <button id="room-ready" class="primary">ESTOU PRONTO <span data-icon="check"></span></button>
+      <button id="room-leave" class="secondary">SAIR DA SALA</button>
+    </div>
+    <p class="social-note">Mesma sequência de obstáculos e largada sincronizada. Quem atravessar mais canos vence. Empates são possíveis. Desconexão por mais de 15 segundos encerra o voo na última pontuação validada.</p>
+  </div>
+</section>
 <div id="countdown" hidden role="status"></div>
 <div id="six-seven" hidden aria-live="polite">
   <strong>6 <span data-icon="star"></span> 7</strong>

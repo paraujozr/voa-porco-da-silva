@@ -15,7 +15,13 @@
   font-size: 26px;
   text-shadow: 0 var(--px) 0 var(--outline);
 }
+.brand > span {
+  display: block;
+  line-height: 1;
+}
 .brand small {
+  display: block;
+  margin-top: 4px;
   color: var(--ink-dim);
   font-family: var(--font-ui);
   font-size: 15px;
