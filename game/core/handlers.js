@@ -10,7 +10,6 @@ import {
 } from './engine.js';
 import {SKINS, MAPS} from './catalog.js';
 export function createHandlers(db, ApiError) {
-  const callable = fn => fn;
   const fail = (message, code = 'failed-precondition') => {
     throw new ApiError(code, message);
   };
@@ -37,7 +36,7 @@ export function createHandlers(db, ApiError) {
       revives: saved.revives || [],
     });
   }
-  const ensureProfile = callable(async uid => {
+  const ensureProfile = async uid => {
     const ref = profileRef(uid);
     return db.runTransaction(async tx => {
       const s = await tx.get(ref);
@@ -46,8 +45,8 @@ export function createHandlers(db, ApiError) {
       tx.create(ref, p);
       return p;
     });
-  });
-  const setNickname = callable(async (uid, data) => {
+  };
+  const setNickname = async (uid, data) => {
     const name = nickname(data.nickname);
     return db.runTransaction(async tx => {
       const ref = profileRef(uid),
@@ -60,8 +59,8 @@ export function createHandlers(db, ApiError) {
           tx.set(db.doc(`boards/${level}/entries/${uid}`), {nickname: name}, {merge: true});
       return {...p, nickname: name};
     });
-  });
-  const buyItem = callable(async (uid, data) =>
+  };
+  const buyItem = async (uid, data) =>
     db.runTransaction(async tx => {
       const items = data.kind === 'map' ? MAPS : SKINS,
         item = items.find(x => x.id === data.id);
@@ -77,9 +76,8 @@ export function createHandlers(db, ApiError) {
       p[key].push(item.id);
       tx.set(ref, p);
       return p;
-    }),
-  );
-  const beginRun = callable(async (uid, data) => {
+    });
+  const beginRun = async (uid, data) => {
     const now = Date.now(),
       rid = randomUUID(),
       seed = randomInt(0, 0x100000000);
@@ -111,8 +109,8 @@ export function createHandlers(db, ApiError) {
       tx.update(ref, {activeRun: rid, lastStart: now});
       return {id: rid, ...run, serverNow: now};
     });
-  });
-  const settleRun = callable(async (uid, data) => {
+  };
+  const settleRun = async (uid, data) => {
     const rid = id(data.runId),
       now = Date.now();
     return db.runTransaction(async tx => {
@@ -155,8 +153,8 @@ export function createHandlers(db, ApiError) {
         });
       return {profile: next, result};
     });
-  });
-  const continueRun = callable(async (uid, data) =>
+  };
+  const continueRun = async (uid, data) =>
     db.runTransaction(async tx => {
       const rid = id(data.runId),
         rr = runRef(rid),
@@ -181,9 +179,8 @@ export function createHandlers(db, ApiError) {
       tx.set(pr, p);
       tx.update(rr, {state: 'active', revives});
       return {profile: p, revives};
-    }),
-  );
-  const createRoom = callable(async uid => {
+    });
+  const createRoom = async uid => {
     const now = Date.now();
     for (let attempt = 0; attempt < 8; attempt++) {
       const code = String(randomInt(100000, 1000000)),
@@ -225,8 +222,8 @@ export function createHandlers(db, ApiError) {
       if (result) return {room: result, serverNow: now};
     }
     fail('Não foi possível gerar uma sala. Tente novamente.');
-  });
-  const joinRoom = callable(async (uid, data) => {
+  };
+  const joinRoom = async (uid, data) => {
     const code = String(data.code);
     if (!/^\d{6}$/.test(code)) fail('Digite os seis números da sala.');
     const now = Date.now();
@@ -258,8 +255,8 @@ export function createHandlers(db, ApiError) {
       tx.set(rr, room);
       return {room, serverNow: now};
     });
-  });
-  const readyRoom = callable(async (uid, data) => {
+  };
+  const readyRoom = async (uid, data) => {
     const now = Date.now();
     return db.runTransaction(async tx => {
       const ref = roomRef(id(data.code)),
@@ -280,7 +277,7 @@ export function createHandlers(db, ApiError) {
       tx.set(ref, r);
       return {room: r, serverNow: now};
     });
-  });
+  };
   async function rewardDuel(tx, room, uid) {
     const player = room.players[uid];
     if (player.state !== 'done' || player.rewarded) return;
@@ -310,7 +307,7 @@ export function createHandlers(db, ApiError) {
         achievedAt: Date.now(),
       });
   }
-  const duelTick = callable(async (uid, data) => {
+  const duelTick = async (uid, data) => {
     const now = Date.now();
     return db.runTransaction(async tx => {
       const ref = roomRef(id(data.code)),
@@ -345,8 +342,8 @@ export function createHandlers(db, ApiError) {
       tx.set(ref, r);
       return {room: r, serverNow: now};
     });
-  });
-  const leaveRoom = callable(async (uid, data) => {
+  };
+  const leaveRoom = async (uid, data) => {
     const now = Date.now();
     return db.runTransaction(async tx => {
       const ref = roomRef(id(data.code)),
@@ -365,7 +362,7 @@ export function createHandlers(db, ApiError) {
       tx.set(ref, r);
       return {room: r, serverNow: now};
     });
-  });
+  };
 
   return {
     ensureProfile,
