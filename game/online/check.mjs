@@ -2,11 +2,15 @@ import assert from 'node:assert/strict';
 import {randomBytes} from 'node:crypto';
 import {createRun, advance} from '../core/engine.js';
 const base = process.env.ONLINE_TEST_URL || 'http://127.0.0.1:8787';
+// A local dev server has no Cloudflare edge, so the per-IP auth limit would block repeated runs;
+// give each run its own fake client address. (Production overwrites this header.)
+const fakeIp = `10.${randomBytes(1)[0]}.${randomBytes(1)[0]}.${randomBytes(1)[0]}`;
 const call = async (name, data = {}, token) => {
   const response = await fetch(`${base}/${name}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      'CF-Connecting-IP': fakeIp,
       ...(token ? {Authorization: `Bearer ${token}`} : {}),
     },
     body: JSON.stringify(data),

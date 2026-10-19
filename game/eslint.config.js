@@ -2,7 +2,7 @@ import js from '@eslint/js';
 import globals from 'globals';
 
 export default [
-  {ignores: ['dist/**', 'node_modules/**', 'online/node_modules/**', 'server/node_modules/**']},
+  {ignores: ['**/.wrangler/**', 'dist/**', 'node_modules/**', 'online/node_modules/**', 'server/node_modules/**']},
   js.configs.recommended,
   {
     languageOptions: {ecmaVersion: 2023, sourceType: 'module'},

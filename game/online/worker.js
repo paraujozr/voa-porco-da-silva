@@ -16,6 +16,8 @@ const GUEST_METHODS = new Set([
   'me',
 ]);
 const authMethods = new Set(['register', 'login', 'guest', 'recover']);
+// Methods that cannot change anything a connected client is watching.
+const READ_ONLY_METHODS = new Set(['me', 'socketTicket']);
 const errorResponse = e =>
   Response.json(
     {
@@ -47,7 +49,8 @@ export default {
       const out = new Response(response.body, response);
       for (const [k, v] of Object.entries(headers)) out.headers.set(k, v);
       return out;
-    } catch {
+    } catch (e) {
+      console.error('durable object call failed', e);
       return Response.json(
         {error: 'Servidor temporariamente indisponível.'},
         {status: 503, headers},
@@ -201,7 +204,7 @@ export class GameServer extends DurableObject {
     } else if (Object.hasOwn(this.handlers, method))
       result = await this.handlers[method](s.uid, data);
     else throw new ApiError('invalid-argument', 'Operação inválida.');
-    await this.broadcast();
+    if (!READ_ONLY_METHODS.has(method)) await this.broadcast();
     return Response.json({...result, serverNow: Date.now()});
   }
   connect(request, url) {
@@ -259,18 +262,31 @@ export class GameServer extends DurableObject {
       }
     });
   }
-  async sendSnapshot(ws, a) {
-    if (!this.db.get(`sessions/${a.session}`)) {
+  // Direct reads from storage, or reads memoised for the duration of one broadcast so N
+  // sockets watching the same room/board cost one query instead of N.
+  source(memo) {
+    if (!memo) return {read: id => this.db.get(id), board: level => this.db.board(level)};
+    const once = (key, load) => {
+      if (!memo.has(key)) memo.set(key, load());
+      return memo.get(key);
+    };
+    return {
+      read: id => once(id, () => this.db.get(id)),
+      board: level => once(`board:${level}`, () => this.db.board(level)),
+    };
+  }
+  async sendSnapshot(ws, a, source = this.source()) {
+    if (!source.read(`sessions/${a.session}`)) {
       ws.close(1008, 'Sessão expirada');
       return;
     }
-    const profile = a.guest ? null : this.db.get(`profiles/${a.uid}`),
-      room = a.room ? this.db.get(`rooms/${a.room}`) : null;
+    const profile = a.guest ? null : source.read(`profiles/${a.uid}`),
+      room = a.room ? source.read(`rooms/${a.room}`) : null;
     const payload = {
       type: 'snapshot',
       profile,
       room: room?.members.includes(a.uid) ? room : null,
-      board: a.level ? this.db.board(a.level) : null,
+      board: a.level ? source.board(a.level) : null,
     };
     const version = digest(JSON.stringify(payload));
     if (version !== a.last) {
@@ -280,14 +296,21 @@ export class GameServer extends DurableObject {
     }
   }
   async broadcast() {
+    const source = this.source(new Map());
     for (const ws of this.ctx.getWebSockets())
       try {
-        await this.sendSnapshot(ws, ws.deserializeAttachment());
+        await this.sendSnapshot(ws, ws.deserializeAttachment(), source);
       } catch {
         ws.close(1011, 'Reconecte');
       }
   }
   webSocketClose(ws, code) {
-    ws.close(code);
+    // Codes such as 1005/1006 are reported to us but are illegal to send back.
+    const reserved = code < 1000 || code > 4999 || [1004, 1005, 1006, 1015].includes(code);
+    try {
+      ws.close(reserved ? 1000 : code);
+    } catch {
+      // already closed
+    }
   }
 }
