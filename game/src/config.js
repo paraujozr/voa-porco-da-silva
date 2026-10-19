@@ -12,7 +12,7 @@ pig('maker','Maker Lab FIAP','IDEIA → PROTÓTIPO','Se não voar, a gente impri
 pig('obra','Zé da Obra','CAPACETE E CORAGEM','Obra atrasada? Só se for a gravidade.',0xefa49b,0xf09b3d),
 pig('craque','Craque do Voo','RECEBA!','É sobre isso. E tá tudo voando.',0xf2b2a7,0xf4d14b,10),
 pig('praia','Rei do Mate','SEXTOU NA ORLA','O pai tá on. O mate tá gelado.',0xeaa29b,0x4ab4bc,15),
-pig('delivery','Entrega Expressa','O PEDIDO DECOLOU','O GPS falou: vire à direita na próxima nuvem.',0xe7a397,0x283b51,20),
+pig('delivery','Cachorro Louco Delivery','O PEDIDO DECOLOU','Caramelo de capacete, bag nas costas e entrega nas nuvens.',0xb77a43,0x26364e,20),
 pig('maromba','Porco do Shape','TÁ PAGO!','Hoje é treino de asa. Bora, bill!',0xe4a094,0x8559a5,30),
 pig('coroa','Rei da Resenha','LÁ ELE!','Receba! O céu acaba de ganhar um rei.',0xf5aaa6,0x469777,60),
 pig('babe','Babe','PORQUINHO ATRAPALHADO','Um pequeno herói, uma grande aventura.',0xeeb1a0,0xeeb1a0,25,'Pop'),

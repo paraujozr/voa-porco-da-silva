@@ -44,3 +44,11 @@ Para testar a interface com os emuladores, use valores de demonstração no `.en
 - Firestore rules negam escritas diretas; compras e recompensas passam por transações nas Functions. Configure uma política de retenção para documentos de partidas/salas antes de escalar o serviço.
 
 Validação em produção, teste em Safari/iPhone físico e teste multiplayer entre redes diferentes ainda são necessários antes de lançar os modos online.
+
+## Atualização de 19/10/2026
+
+O projeto real `voa-porco-da-silva` e o app `Voa Porco Web` foram criados no plano Spark. O provedor Google está ativado, com nome público Voa Porco da Silva. Domínios autorizados incluem `paraujozr.github.io`, `localhost` e `127.0.0.1`.
+
+A configuração pública foi salva localmente em `.env.firebase.local` (ignorada pelo Git). Ela ainda não está habilitada na prévia padrão: faltam publicar o servidor e o banco, testar OAuth real e decidir sobre Blaze ou uma alternativa sem cartão. Nenhum faturamento foi ativado.
+
+O modo `emulator` tem login com conta fictícia claramente identificado e isolado por aba. Esse caminho é condicionado ao desenvolvimento e ao emulador; não autentica usuários em produção. Duelo foi exercitado pela interface em dois clientes, além do teste de integração com créditos e idempotência.

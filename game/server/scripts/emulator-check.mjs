@@ -19,10 +19,10 @@ assert.equal((await call(a,'continueRun',{runId:ticket.id,tick:run.tick})).profi
 const room=(await call(a,'createRoom')).room;assert.match(room.code,/^\d{6}$/);
 const joined=await Promise.all([call(b,'joinRoom',{code:room.code}),call(c,'joinRoom',{code:room.code})]);assert.equal(joined.filter(x=>!x.error).length,1);const rival=joined[0].error?c:b;
 await call(a,'readyRoom',{code:room.code});const race=(await call(rival,'readyRoom',{code:room.code})).room;assert.equal(race.state,'racing');assert.equal(race.members.length,2);
-await db.doc(`rooms/${room.code}`).update({startAt:Date.now()-10000});
-const duel=createRun(race.seed,'normal',true);while(!duel.dead)advance(duel);
-await call(a,'duelTick',{code:room.code,inputs:[],ticks:duel.tick,quit:true});
-const finish=(await call(rival,'duelTick',{code:room.code,inputs:[],ticks:duel.tick,quit:true})).room;assert.equal(finish.state,'finished');assert.equal(finish.winner,'draw');
+await db.doc(`rooms/${room.code}`).update({startAt:Date.now()-100000,seed:19});
+const duel=createRun(19,'normal',true),duelInputs=[];while(!duel.dead&&duel.passed<3){const target=duel.gates.find(g=>g.x> -1)?.center??1;const flap=duel.y<target-.5&&duel.v<0;if(flap)duelInputs.push(duel.tick);advance(duel,flap);}assert.ok(duel.passed>0);assert.ok(duel.coins>0);
+await call(a,'duelTick',{code:room.code,inputs:duelInputs,ticks:duel.tick,quit:true});
+const finish=(await call(rival,'duelTick',{code:room.code,inputs:duelInputs,ticks:duel.tick,quit:true})).room;assert.equal(finish.state,'finished');assert.equal(finish.winner,'draw');const earned=(await db.doc(`profiles/${a.localId}`).get()).data();assert.equal(earned.coins,75+duel.coins);assert.equal(earned.runs,2);await call(a,'duelTick',{code:room.code});assert.equal((await db.doc(`profiles/${a.localId}`).get()).data().coins,earned.coins);
 // Client REST must not read another private profile or mint coins.
 const base='http://127.0.0.1:8080/v1/projects/demo-voaporco/databases/(default)/documents';
 const headers={Authorization:`Bearer ${b.idToken}`,'Content-Type':'application/json'};

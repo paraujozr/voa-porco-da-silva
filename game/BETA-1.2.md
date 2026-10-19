@@ -10,3 +10,5 @@ Online depende da configuração descrita em `docs/FIREBASE_SETUP.md`. O modo co
 Desenvolvimento: `npm ci`, `npm run dev -- --port 5174`. Verificação: `npm test`, `npm run build`. Backend: `npm ci` em `server/`.
 
 A versão pública 1.1 não foi substituída por esta prévia.
+
+Atualização: voo com fase contínua de asas e movimentos articulados; Cachorro Louco Delivery (ID de compra preservado) com capacete, viseira, bag e visual caramelo. Saída de duelo não reconecta mais por atualizações atrasadas. Moedas e estatísticas do duelo são creditadas pelo servidor uma única vez. Efeitos locais usam AudioContext liberado por interação para melhorar compatibilidade móvel.
