@@ -1,10 +1,10 @@
-import './style.css';
 import './reference.css';
-import './voxel.css';
 import './social.css';
 import './styles/sprites.css';
 import './styles/tokens.css';
 import './styles/base.css';
+import './styles/scene.css';
+import './styles/hud.css';
 import './styles/components.css';
 import './styles/menu.css';
 import './styles/modal.css';

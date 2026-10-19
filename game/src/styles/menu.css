@@ -218,3 +218,33 @@
     display: none;
   }
 }
+
+/* ---- takeoff: the menu parts slide out in steps while the HUD slides in ---- */
+#top,
+.rail,
+.menu-bottom {
+  transition: transform 0.35s steps(5);
+}
+body.takeoff #top {
+  transform: translateY(-220%);
+}
+body.takeoff .rail-left {
+  transform: translateX(-220%);
+}
+body.takeoff .rail-right {
+  transform: translateX(220%);
+}
+body.takeoff .menu-bottom {
+  transform: translate(-50%, 240%);
+}
+body.takeoff #menu,
+body.takeoff #menu * {
+  pointer-events: none !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  #top,
+  .rail,
+  .menu-bottom {
+    transition: none;
+  }
+}

@@ -11,6 +11,8 @@ import {renderMenu, bestRecord, isOwned} from './menu-ui.js';
 import {showModal} from './modal.js';
 import {DuelController} from './duel.js';
 import {buildMenuProp} from './menu-scene.js';
+import {icon} from './icons.js';
+import {takeoffPose, easeInOut, TAKEOFF_SECONDS} from './takeoff.js';
 
 // The menu set piece stands on the road in front of the camera.
 const MENU_Z = 4;
@@ -19,6 +21,7 @@ const ROAD_Y = -4.8;
 // Values double as <body> class names (see the CSS), so keep them stable.
 export const STATE = {
   MENU: 'menu',
+  TAKEOFF: 'takeoff',
   COUNTDOWN: 'countdown',
   PLAYING: 'playing',
   PAUSED: 'paused',
@@ -45,6 +48,7 @@ export class Game {
     this.world = null;
     this.pig = null;
     this.prop = null; // the menu set piece the pig sits on
+    this.takeoff = null; // menu -> flight hop in progress
 
     this.run = null; // engine state of the current flight
     this.ticket = null; // server/guest receipt for the current flight
@@ -79,13 +83,14 @@ export class Game {
   // ---- state & menu ----
   setState(next) {
     this.state = next;
-    if (this.prop) this.prop.group.visible = next === STATE.MENU;
+    if (this.prop) this.prop.group.visible = [STATE.MENU, STATE.TAKEOFF].includes(next);
     document.body.className = next;
-    $('menu').hidden = next !== STATE.MENU;
+    // The menu stays up during the takeoff so its parts can slide out (see menu.css).
+    $('menu').hidden = ![STATE.MENU, STATE.TAKEOFF].includes(next);
     $('hud').hidden = next === STATE.MENU;
     $('modal').hidden = ![STATE.PAUSED, STATE.OVER].includes(next);
     $('countdown').hidden = next !== STATE.COUNTDOWN;
-    $('pause').textContent = this.duel ? 'SAIR DO DUELO' : 'Ⅱ PAUSAR';
+    $('pause').innerHTML = this.duel ? 'SAIR DO DUELO' : `${icon('pause')} PAUSAR`;
   }
 
   applyQuality() {
@@ -173,6 +178,12 @@ export class Game {
         return;
       }
       this.duel = null;
+      // From the menu the pig hops off its seat while the ticket is fetched; from the game-over
+      // screen (retry) there is nothing to hop from, so go straight in.
+      if (this.state === STATE.MENU) {
+        this.beginTakeoff(this.session.begin(map.id, data.id, this.difficulty));
+        return;
+      }
       this.prepare(await this.session.begin(map.id, data.id, this.difficulty));
       this.setState(STATE.PLAYING);
       this.audio.play('flap');
@@ -231,6 +242,62 @@ export class Game {
     else await this.buy(map, 'map');
   }
 
+  beginTakeoff(ticketPromise) {
+    const {pig, prop} = this;
+    const takeoff = {
+      t: 0,
+      ticket: null,
+      error: null,
+      from: {
+        x: pig.position.x,
+        y: pig.position.y,
+        z: pig.position.z,
+        scale: pig.scale.x,
+        yaw: pig.rotation.y,
+      },
+      propX: prop.group.position.x,
+      seconds: matchMedia('(prefers-reduced-motion: reduce)').matches ? 0.2 : TAKEOFF_SECONDS,
+    };
+    this.takeoff = takeoff;
+    ticketPromise.then(
+      ticket => (takeoff.ticket = ticket),
+      error => (takeoff.error = error),
+    );
+    pig.visible = true;
+    this.setState(STATE.TAKEOFF);
+    this.audio.play('flap');
+  }
+
+  tickTakeoff(dt) {
+    const k = this.takeoff;
+    if (!k) return;
+    k.t += dt;
+    if (k.error) {
+      toast(k.error.message);
+      this.takeoff = null;
+      this.setState(STATE.MENU);
+      return;
+    }
+    const progress = Math.min(1, k.t / k.seconds);
+    const pose = takeoffPose(
+      k.from,
+      {x: this.stage.playerX, y: 1, z: 0, scale: 0.68, yaw: 0.2},
+      progress,
+      2,
+    );
+    this.pig.position.set(pose.x, pose.y, pose.z);
+    this.pig.scale.setScalar(pose.scale);
+    this.pig.rotation.set(0.02 * (1 - progress), pose.yaw, 0);
+    this.flapPulse = 1; // wings beat hard while hopping off
+    // The set piece rolls away to the left, as if the pig were flying past it.
+    this.prop.group.position.x = k.propX - easeInOut(progress) ** 2 * this.stage.halfWidth * 2.4;
+    if (progress >= 1 && k.ticket) {
+      this.takeoff = null;
+      this.prepare(k.ticket);
+      this.setState(STATE.PLAYING);
+    }
+  }
+
   async settle(quit = false) {
     if (!this.run || !this.ticket || this.duel) return;
     this.settlement = this.session.settle(this.ticket, this.run, [...this.inputs], quit);
@@ -243,7 +310,7 @@ export class Game {
     $('continue-run').hidden = !allowed;
     if (allowed) {
       const price = continuePrice(run.continues);
-      $('continue-run').textContent = `CONTINUAR · ${price} ◉`;
+      $('continue-run').innerHTML = `CONTINUAR · ${price} ${icon('coin')}`;
       $('continue-run').disabled = save.coins < price;
       $('continue-note').textContent =
         save.coins < price
@@ -436,6 +503,7 @@ export class Game {
     const dt = Math.min((now - this.last) / 1000, 0.05);
     this.last = now;
     if (this.state === STATE.COUNTDOWN) this.tickCountdown();
+    if (this.state === STATE.TAKEOFF) this.tickTakeoff(dt);
     if (this.state === STATE.PLAYING && this.run) this.tickFlight(dt);
     if (this.state !== STATE.PAUSED) this.tickScene(dt);
     if (this.state === STATE.MENU) this.tickMenuPig();

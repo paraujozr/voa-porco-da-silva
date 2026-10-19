@@ -75,3 +75,34 @@ button:disabled {
   filter: grayscale(0.6) brightness(0.8);
   cursor: not-allowed;
 }
+
+/* ---- button layout (skins above) ---- */
+.primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 16px 8px;
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: 0;
+}
+.secondary {
+  display: block;
+  width: 100%;
+  padding: 8px 12px 6px;
+  font-size: 20px;
+  line-height: 1.1;
+  letter-spacing: 0;
+}
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  font-size: 18px;
+  letter-spacing: 0;
+}

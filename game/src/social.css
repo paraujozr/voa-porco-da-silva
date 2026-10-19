@@ -154,16 +154,6 @@
   list-style: none;
   padding: 0;
 }
-.ranking-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  border-bottom: 1px solid #00277626;
-  padding: 10px 4px;
-}
-.ranking-row strong {
-  overflow-wrap: anywhere;
-}
 #room-code-display {
   font:
     46px 'Lilita One',
@@ -178,78 +168,6 @@
   border: 2px solid #00277633;
   background: white;
   border-radius: 8px;
-}
-#countdown {
-  position: fixed;
-  inset: 0;
-  z-index: 31;
-  display: grid;
-  place-items: center;
-  background: #00277688;
-  color: #ffdf00;
-  font:
-    100px 'Lilita One',
-    sans-serif;
-  text-shadow: 5px 7px #002776;
-  pointer-events: none;
-}
-#six-seven {
-  position: fixed;
-  top: 20%;
-  left: 50%;
-  transform: translateX(-50%) rotate(-8deg);
-  z-index: 8;
-  pointer-events: none;
-  text-align: center;
-  color: #ffdf00;
-  -webkit-text-stroke: 5px #002776;
-  paint-order: stroke fill;
-  text-shadow: 5px 7px #ec4a91;
-  animation: six-bounce 0.4s alternate infinite;
-}
-#six-seven strong {
-  display: block;
-  font:
-    75px 'Lilita One',
-    sans-serif;
-}
-#six-seven span {
-  font:
-    25px 'Lilita One',
-    sans-serif;
-}
-#continue-note {
-  font-size: 11px;
-}
-#rival-distance {
-  color: #a34161;
-  font-weight: 800;
-}
-.modal-card {
-  max-height: 90dvh;
-  overflow: auto;
-}
-.modal-card h2 {
-  font-size: 28px;
-}
-.modal-card #results {
-  margin: 16px 0;
-  padding: 10px;
-}
-.modal-card #results b {
-  font-size: 25px;
-}
-.modal-card .primary {
-  font-size: 16px;
-  padding: 11px;
-}
-.over .modal-card .eyebrow {
-  display: block;
-}
-@keyframes six-bounce {
-  to {
-    transform: translateX(-50%) rotate(8deg) scale(1.08);
-  }
 }
 @media (max-width: 680px) {
   .social-card {
@@ -277,38 +195,8 @@
     padding-top: 30px;
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  #six-seven {
-    animation: none;
-  }
-}
 /* Mobile is the primary layout: a clear stage above a compact bottom card. */
 @media (max-width: 680px) {
-  #top {
-    top: max(29px, env(safe-area-inset-top));
-    left: 12px;
-    right: 12px;
-  }
-  .official-logo {
-    width: 44px;
-    height: 44px;
-  }
-  .build {
-    display: none;
-  }
-  .top-right .icon-btn {
-    min-height: 44px;
-    padding: 8px;
-  }
-  .wallet {
-    min-height: 40px;
-    display: flex;
-    align-items: center;
-  }
-  .flight-hint {
-    font-size: 12px;
-    bottom: max(18px, env(safe-area-inset-bottom));
-  }
   .social-card input {
     font-size: 16px;
   }
@@ -318,31 +206,6 @@
   }
   .social-card {
     max-height: calc(100dvh - 32px);
-  }
-  .modal-card {
-    width: calc(100% - 28px);
-    padding: 20px;
-  }
-  .stat {
-    top: 90px;
-  }
-  .flight-info {
-    top: 90px;
-  }
-  .playing #top .brand,
-  .playing #top .build {
-    display: none;
-  }
-}
-@media (pointer: coarse) {
-  button {
-    touch-action: manipulation;
-  }
-  #world {
-    touch-action: none;
-  }
-  .flight-hint {
-    font-size: 12px;
   }
 }
 

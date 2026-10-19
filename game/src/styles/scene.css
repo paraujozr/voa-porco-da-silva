@@ -1,0 +1,176 @@
+/* Page chrome: the canvas, the festa junina bunting, the loading cover and toasts. */
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  overflow: hidden;
+}
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+button {
+  font: inherit;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+#world {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+}
+
+/* The whole menu overlay ignores the pointer except for its buttons. */
+#menu {
+  position: fixed;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+}
+#menu button,
+#menu a {
+  pointer-events: auto;
+}
+#top {
+  position: fixed;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 5;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  text-decoration: none;
+}
+.top-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.official-logo {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  clip-path: circle(49%);
+  image-rendering: pixelated;
+}
+
+/* ---- bunting (built by decorateFestival in music.js) ---- */
+.bunting {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 38px;
+  pointer-events: none;
+  z-index: 6;
+}
+.fest-wire {
+  position: absolute;
+  top: 4px;
+  width: 100%;
+  border-top: 2px solid #37445b;
+  transform: rotate(-0.5deg);
+}
+.fest-flag {
+  position: absolute;
+  top: 5px;
+  width: 24px;
+  height: 28px;
+  background: var(--color);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 70%, 0 100%);
+  transform-origin: top center;
+  animation: sway 2.4s ease-in-out infinite alternate;
+  animation-delay: calc(var(--i) * -0.17s);
+}
+.fest-bulb {
+  position: absolute;
+  top: 7px;
+  width: 7px;
+  height: 11px;
+  border-radius: 3px 3px 5px 5px;
+  background: var(--color);
+  box-shadow: 0 0 9px 3px var(--color);
+  animation: twinkle 1.8s steps(2) infinite;
+  animation-delay: calc(var(--i) * -0.24s);
+}
+@keyframes sway {
+  from {
+    transform: rotate(-12deg) skewX(-4deg);
+  }
+  to {
+    transform: rotate(12deg) skewX(4deg);
+  }
+}
+@keyframes twinkle {
+  0%,
+  70% {
+    opacity: 1;
+    filter: brightness(1.3);
+  }
+  71%,
+  100% {
+    opacity: 0.35;
+    box-shadow: none;
+    filter: brightness(0.65);
+  }
+}
+
+/* ---- toast & loading ---- */
+#toast {
+  position: fixed;
+  top: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 40;
+  max-width: min(520px, calc(100% - 24px));
+  padding: 4px 14px 2px;
+  border-style: solid;
+  border-color: transparent;
+  border-width: calc(2 * var(--px)) calc(2 * var(--px)) calc(3 * var(--px));
+  border-image: var(--sprite-btn-yellow) 2 2 3 2 fill / calc(2 * var(--px)) calc(2 * var(--px))
+    calc(3 * var(--px)) calc(2 * var(--px)) / 0 stretch;
+  image-rendering: pixelated;
+  color: var(--outline);
+  font-size: 22px;
+  text-align: center;
+  line-height: 1.1;
+  opacity: 0;
+  pointer-events: none;
+}
+#toast.visible {
+  opacity: 1;
+}
+#loading {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  background: #0d2933;
+  color: var(--yellow);
+  font-family: var(--font-display);
+  font-size: 32px;
+}
+
+@media (max-width: 680px) {
+  .official-logo {
+    width: 44px;
+    height: 44px;
+  }
+  #toast {
+    top: 92px;
+    font-size: 19px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fest-flag,
+  .fest-bulb {
+    animation: none;
+  }
+}
