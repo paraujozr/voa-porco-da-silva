@@ -8,3 +8,5 @@ game/dist/
 *-debug.log
 .firebase/
 server/node_modules/
+
+.wrangler/

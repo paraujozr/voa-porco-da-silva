@@ -1,4 +1,4 @@
-# Voa Porco da Silva — Beta 1.1
+# Voa Porco da Silva — Beta 1.2
 
 Um porco com asas, um Brasil inteiro de resenha e só mais uma tentativa.
 
@@ -14,6 +14,12 @@ https://paraujozr.github.io/voa-porco-da-silva/
 
 O projeto editável está em `game/`: `npm ci`, `npm test`, `npm run dev`. `npm run build` gera `game/dist`. A raiz contém a versão compilada publicada no GitHub Pages.
 
-A branch `beta-1.0` preserva a versão anterior e as alterações originais do autor. A Beta 1.1 mantém a identidade visual e evolui o jogo existente.
+A branch `beta-1.0` preserva a versão anterior e as alterações originais do autor. A Beta 1.2 mantém a identidade visual e evolui o jogo existente.
 
 Projeto de Pedro Araújo. Personagens de cultura pop são homenagens estilizadas de fã. Fontes dos áudios em `audio/*-source.json`.
+
+## Online sem Google
+
+Crie sua conta com nome e senha para guardar moedas, skins e recordes. Guarde o código de recuperação exibido no cadastro. O duelo 1v1 também funciona sem cadastro: crie a sala, compartilhe os seis números e ambos cliquem em Pronto. Quem passar mais canos vence.
+
+Backend gratuito Cloudflare, sem cartão. Configuração e limites em [game/docs/ONLINE_SETUP.md](game/docs/ONLINE_SETUP.md). O projeto Firebase anterior não é utilizado.
