@@ -1,0 +1,112 @@
+/*
+ * Shared skins. Frames are 9-slice sprites (sprites.css): one source pixel = one --px.
+ *   panel  - big surfaces (slice 3)
+ *   inset  - sunken areas (slice 3)
+ *   field  - inputs, selects, small readouts (slice 2)
+ *   block  - 3D buttons (slice 2 top/sides, 3 bottom for the side face)
+ * Colour variants set --block / --block-down; pressing swaps the sprite and sinks the block.
+ */
+
+/* ---- panel & inset ---- */
+.intro,
+.preview-label {
+  border-style: solid;
+  border-color: transparent;
+  border-width: calc(3 * var(--px));
+  border-image: var(--sprite-panel) 3 fill / calc(3 * var(--px)) / 0 stretch;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  color: var(--ink);
+  image-rendering: pixelated;
+}
+.intro .char-selector {
+  border-style: solid;
+  border-color: transparent;
+  border-width: calc(3 * var(--px));
+  border-image: var(--sprite-inset) 3 fill / calc(3 * var(--px)) / 0 stretch;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  image-rendering: pixelated;
+}
+
+/* ---- field ---- */
+.field,
+select,
+.difficulty-row select,
+.wallet,
+.build,
+kbd,
+.scene-caption {
+  border-style: solid;
+  border-color: transparent;
+  border-width: calc(2 * var(--px));
+  border-image: var(--sprite-field) 2 fill / calc(2 * var(--px)) / 0 stretch;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  color: var(--ink);
+  image-rendering: pixelated;
+}
+
+/* ---- block buttons ---- */
+.primary,
+.secondary,
+.icon-btn,
+.map,
+.character,
+.char-selector-controls button,
+.pill,
+.char-selector-label {
+  --block: var(--sprite-btn-steel);
+  --block-down: var(--sprite-btn-steel-down);
+  border-style: solid;
+  border-color: transparent;
+  border-width: calc(2 * var(--px)) calc(2 * var(--px)) calc(3 * var(--px));
+  border-image-source: var(--block);
+  border-image-slice: 2 2 3 2 fill;
+  border-image-width: calc(2 * var(--px)) calc(2 * var(--px)) calc(3 * var(--px))
+    calc(2 * var(--px));
+  border-image-repeat: stretch;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  transform: none;
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-weight: 700;
+  image-rendering: pixelated;
+  backdrop-filter: none;
+}
+.primary,
+.map.selected,
+.character.selected {
+  --block: var(--sprite-btn-yellow);
+  --block-down: var(--sprite-btn-yellow-down);
+  color: var(--outline);
+}
+.secondary[aria-pressed='true'] {
+  --block: var(--sprite-btn-green);
+  --block-down: var(--sprite-btn-green-down);
+}
+.pill,
+.char-selector-label {
+  --block: var(--sprite-btn-blue);
+  color: var(--yellow);
+}
+.char-selector-label {
+  transform: none;
+}
+
+button:not(.pill):not(.char-selector-label):active:not(:disabled) {
+  border-image-source: var(--block-down);
+  transform: translateY(var(--px));
+}
+button:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+button:disabled {
+  filter: grayscale(0.6) brightness(0.8);
+  cursor: not-allowed;
+}

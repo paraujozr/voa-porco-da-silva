@@ -6,3 +6,4 @@ index.html
 *.md
 .wrangler
 .claude
+src/styles/sprites.css
