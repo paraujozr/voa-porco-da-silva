@@ -22,4 +22,4 @@ Projeto de Pedro Araújo. Personagens de cultura pop são homenagens estilizadas
 
 Crie sua conta com nome e senha para guardar moedas, skins e recordes. Guarde o código de recuperação exibido no cadastro. O duelo 1v1 também funciona sem cadastro: crie a sala, compartilhe os seis números e ambos cliquem em Pronto. Quem passar mais canos vence.
 
-Backend gratuito Cloudflare, sem cartão. Configuração e limites em [game/docs/ONLINE_SETUP.md](game/docs/ONLINE_SETUP.md). O projeto Firebase anterior não é utilizado.
+Backend gratuito Cloudflare, sem cartão. Configuração e limites em [game/docs/ONLINE_SETUP.md](game/docs/ONLINE_SETUP.md). O Firebase usado em versões anteriores foi removido do código.

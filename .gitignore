@@ -6,7 +6,5 @@ game/dist/
 .env.local
 .env.*.local
 *-debug.log
-.firebase/
-server/node_modules/
 
 .wrangler/

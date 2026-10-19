@@ -29,4 +29,4 @@ https://developers.cloudflare.com/workers/platform/pricing/
 WebSockets usam hibernação. Limites por IP/conta protegem autenticação; sessões, salas e partidas antigas expiram. O tráfego usa HTTPS e origens autorizadas. O placar é por canos, não metros. Isto não impede bots que executem voos válidos.
 
 ## Firebase anterior
-O projeto Firebase gratuito foi criado, mas não é utilizado nesta versão. O adaptador em server/index.js ficou apenas para regressão histórica local. Não ativar Blaze nem publicar Functions.
+A Beta 1.2 não usa Firebase. O adaptador de Cloud Functions, as regras do Firestore e a configuração do emulador foram removidos; estão no histórico do git (commit 91d9d84 e anteriores). O projeto Firebase criado permanece no plano gratuito, sem Functions publicadas; não ative o plano Blaze por causa deste projeto.
