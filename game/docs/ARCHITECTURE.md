@@ -10,23 +10,29 @@ game/
 │  └─ handlers.js   Compras, voos, continue e salas, sobre uma interface de documentos
 ├─ src/             Cliente (Vite + three.js)
 │  ├─ main.js       Bootstrap: monta Session, Stage, Game e eventos
-│  ├─ game.js       Máquina de estados e laço de quadros (Game)
+│  ├─ game.js       Máquina de estados (menu, decolagem, voo, pausa, fim) e laço de quadros
+│  ├─ takeoff.js    Matemática pura da decolagem menu → voo (testada)
+│  ├─ menu-scene.js Objeto 3D do menu para cada mapa (banco, mureta, rampa, tronco)
 │  ├─ duel.js       Fluxo do duelo 1v1 (DuelController)
 │  ├─ controls.js   Liga eventos de DOM/janela ao Game
 │  ├─ stage.js      Renderer, câmera e luzes
 │  ├─ entities.js   Malhas de canos, moedas e partículas
-│  ├─ menu-ui.js, modal.js, dom.js   Desenho do menu, diálogo e helpers de DOM
+│  ├─ menu-ui.js    Desenha o menu e os diálogos Porcos/Mapas a partir do estado
+│  ├─ icons.js      Ícones em pixel (grades ASCII) e retrato colorido do porco
+│  ├─ modal.js, dom.js   Cartão de pausa/fim e helpers de DOM
 │  ├─ session.js    Conta, convidado e chamadas ao servidor
 │  ├─ guest-profile.js  Persistência do convidado (localStorage + migração)
 │  ├─ transport.js  HTTP + WebSocket com reconexão
-│  └─ social-ui.js  Painéis de perfil, pódio e duelo
+│  ├─ social-ui.js  Perfil, pódio e duelo (lógica dos diálogos)
+│  └─ styles/       CSS: tokens, sprites (gerado), base, scene, components, menu, hud, modal, social
 ├─ online/          Backend Cloudflare Worker + Durable Object (SQLite)
 │  ├─ worker.js     Roteamento, sessões, limites, WebSocket e broadcast
 │  ├─ store.js      Adaptador de documentos sobre SQLite
 │  ├─ auth.js       Usuário, senha (scrypt) e tokens
 │  └─ check.mjs     Teste de integração contra um servidor local
 ├─ test/            Testes unitários (`npm test`)
-└─ scripts/publish-root.mjs   Gera o build e copia para a raiz do repositório (GitHub Pages)
+├─ scripts/publish-root.mjs   Gera o build e copia para a raiz do repositório (GitHub Pages)
+└─ scripts/build-sprites.mjs  Gera styles/sprites.css (molduras 9-slice) a partir de grades ASCII
 ```
 
 A raiz do repositório contém apenas o **build publicado** (`index.html`, `assets/`, `audio/`,
@@ -46,6 +52,27 @@ A raiz do repositório contém apenas o **build publicado** (`index.html`, `asse
    `modal`) recebem o que precisam e não guardam estado de jogo.
 4. **IDs do DOM são checados por teste.** `test/dom-ids.test.js` garante que todo
    `$('id')` existe em `index.html`.
+
+## Interface ("Bloco Voxel")
+
+A tela inicial é a própria cena 3D: o porco senta num objeto do mapa (`menu-scene.js`) e a UI é uma
+moldura fina em volta (barra do topo, trilhos laterais, barra de nome e BORA VOAR). Porcos, Mapas e
+Ajustes abrem como diálogos; comprar skin ou mapa acontece dentro deles. Ao jogar, `Game` entra em
+`TAKEOFF` (~0,6 s): o menu sai em degraus, o porco salta do assento, o HUD entra e a partida começa
+quando o salto termina e o bilhete do servidor chega.
+
+Regras de estilo:
+
+- **Uma unidade de pixel** (`--px`, 3 px; 2 px em telas ≤ 680 px). Molduras são sprites 9-slice
+  (`styles/sprites.css`, gerado por `npm run sprites`); cantos retos, bisel claro em cima e lateral
+  escura embaixo; o botão afunda ao clicar. Nada de `border-radius`.
+- **Fonte:** Jersey 15 (texto) e Jersey 20 (títulos). A Pixelify Sans foi testada e descartada: "C"/"O"
+  e "5"/"S" se confundem nos tamanhos de UI.
+- **Ícones** são grades ASCII em `icons.js` (`icon('coin')` ou `<span data-icon="coin">`); nada de
+  emojis. `test/icons.test.js` garante que todo ícone usado existe.
+- **Estados** são classes do `<body>` (`menu`, `takeoff`, `playing`, `paused`, `over`); o CSS reage a
+  elas. IDs usados pelo JS são conferidos por `test/dom-ids.test.js`.
+- Respeite `prefers-reduced-motion`: transições em `steps()` e decolagem mais curta.
 
 ## Servidor
 

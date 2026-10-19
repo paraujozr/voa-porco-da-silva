@@ -16,6 +16,7 @@ npm run lint         # ESLint
 npm run format       # Prettier (format:check só confere)
 npm run build        # gera game/dist
 npm run publish:root # build + copia para a raiz do repositório (GitHub Pages)
+npm run sprites      # regenera src/styles/sprites.css (só se mudar scripts/build-sprites.mjs)
 ```
 
 Para jogar online localmente: em `game/online` rode `npm ci` e `npm run dev`, crie
@@ -24,7 +25,7 @@ Para jogar online localmente: em `game/online` rode `npm ci` e `npm run dev`, cr
 
 ## Controles
 
-Espaço, seta para cima ou toque fazem o porco voar; Esc/P pausam. 3D LEVE reduz a resolução e
+Espaço, seta para cima ou toque fazem o porco voar; Esc/P pausam. Em Ajustes (engrenagem), 3D LEVE reduz a resolução e
 desliga sombras.
 
 ## Jogo

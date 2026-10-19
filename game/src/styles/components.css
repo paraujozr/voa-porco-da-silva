@@ -1,14 +1,13 @@
 /*
  * Shared skins. Frames are 9-slice sprites (sprites.css): one source pixel = one --px.
- *   panel  - big surfaces (slice 3)
- *   inset  - sunken areas (slice 3)
+ *   panel  - dialogs and cards (slice 3), set where they are used
+ *   inset  - sunken areas such as the name bar and detail boxes (slice 3)
  *   field  - inputs, selects, small readouts (slice 2)
  *   block  - 3D buttons (slice 2 top/sides, 3 bottom for the side face)
  * Colour variants set --block / --block-down; pressing swaps the sprite and sinks the block.
  */
 
 /* ---- field ---- */
-.field,
 input,
 textarea,
 select,
