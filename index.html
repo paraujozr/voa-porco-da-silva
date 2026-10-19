@@ -1,14 +1,239 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0d2430"><meta name="description" content="Voa Porco: Brasil afora. Uma aventura 3D brasileira entre praias, florestas e muita resenha."><title>Voa Porco • Brasil afora</title><link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Lilita+One&display=swap" rel="stylesheet">  <script type="module" crossorigin src="./assets/index-jVk7Njh0.js"></script>
+<html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0d2430"><meta name="description" content="Voa Porco: Brasil afora. Uma aventura 3D brasileira entre praias, florestas e muita resenha."><title>Voa Porco • Brasil afora</title><link href="https://fonts.googleapis.com/css2?family=Jersey+15&family=Jersey+20&display=swap" rel="stylesheet">  <script type="module" crossorigin src="./assets/index-BGKCTQu9.js"></script>
   <link rel="modulepreload" crossorigin href="./assets/three-BITAAsfm.js">
-  <link rel="stylesheet" crossorigin href="./assets/index-CJAWSbbz.css">
-</head><body><canvas id="world" aria-label="Cenário tridimensional do jogo"></canvas><div id="shade"></div><div class="bunting" aria-hidden="true"></div>
-<header id="top"><a class="brand" href="#" aria-label="Voa Porco início"><img class="official-logo" src="./logo-oficial.png" alt="Logo oficial Voa Porco da Silva"><span>VOA PORCO<small>BRASIL AFORA</small></span></a><div class="top-right"><span class="build">BETA 1.2</span><span class="wallet">◉ <b id="wallet">0</b></span><button id="sound" class="icon-btn" aria-label="Ativar ou desativar áudio">SOM ON</button><button id="music-toggle" class="icon-btn">♫ TRILHA</button><button id="quality" class="icon-btn">3D ALTO</button></div></header>
-<nav id="social-nav" aria-label="Perfil e modos"><button id="account-button" class="icon-btn">ENTRAR / PERFIL</button><button id="ranking-open" class="icon-btn">🏆 PÓDIO</button><button id="duel-open" class="icon-btn">⚔ DUELO 1v1</button></nav><main id="menu"><section class="intro"><div class="eyebrow"><i></i> UM BRASIL INTEIRO PRA VOAR</div><h1>VOA PORCO<span>DA SILVA</span></h1><p class="lead">Um trabalhador, duas asinhas e um céu inteiro de desafios. Escolha seu parceiro de voo!</p><div class="char-selector"><div class="char-selector-label">ESCOLHA SEU PORCO TRABALHADOR</div><div class="char-selector-controls"><button id="prev-char" aria-label="Personagem anterior">◀</button><strong id="selected-name">Zé da Obra</strong><button id="next-char" aria-label="Próximo personagem">▶</button></div><p id="selected-desc"></p><span id="selected-cost"></span></div><button id="open-collection" class="collection-link">VER OS 21 PORCOS ↗</button><div class="section-label">01 / ESCOLHA O DESTINO <span>4 MAPAS</span></div><div id="maps" class="maps"></div><div class="destination"><span id="map-tag"></span><p id="map-desc"></p></div><label class="difficulty-row" for="difficulty"><span>DIFICULDADE</span><select id="difficulty"><option value="easy">De boa • fácil</option><option value="normal" selected>Na raça • normal</option><option value="hard">Sem dó • difícil</option></select></label><button id="play" class="primary">BORA VOAR <span>↗</span></button><div class="menu-note">★ DESVIE DOS CANOS. SUPERE SEU RECORDE. ★</div><p class="controls"><kbd>ESPAÇO</kbd> ou clique para voar <span>•</span> <kbd>ESC</kbd> pausa</p></section><aside class="preview-label"><div class="pill">SEU PARCEIRO DE VOO</div><h2 id="pig-name"></h2><p id="pig-desc"></p><span id="pig-cost"></span></aside><section class="hangar"><div class="hangar-heading"><span>02 / ESCOLHA SEU PORCO</span><span id="record">RECORDE NO RIO: 0</span></div><div id="characters"></div></section><span class="scene-caption" id="scene-caption"></span></main>
-<section id="hud" hidden><div class="stat"><small>PONTUAÇÃO</small><strong id="score">0</strong><span>CANOS</span></div><div class="flight-info"><span id="flight-map"></span><span id="rival-distance" hidden></span><span>◉ <b id="run-coins">0</b></span><button id="pause" class="icon-btn">Ⅱ PAUSAR</button></div><div class="flight-hint">Toque na tela para bater as asas</div></section>
-<section id="modal" hidden role="dialog" aria-modal="true" aria-labelledby="modal-title"><div class="modal-card"><span class="eyebrow" id="modal-eyebrow"></span><h2 id="modal-title"></h2><p id="modal-text"></p><div id="results"><div><span>CANOS</span><b id="result-score">0</b></div><div><span>MOEDAS</span><b id="result-coins">0</b></div><div><span>RECORDE</span><b id="result-best">0</b></div></div><button id="resume" class="primary">CONTINUAR VOO ↗</button><button id="continue-run" class="primary" hidden>CONTINUAR · 25 ◉</button><p id="continue-note"></p><button id="retry" class="primary">MAIS UMA TENTATIVA ↗</button><button id="home" class="secondary">VOLTAR AO HANGAR</button></div></section><section id="collection" hidden role="dialog" aria-modal="true" aria-labelledby="collection-title"><div class="collection-card"><button id="close-collection" class="icon-btn">FECHAR ✕</button><h2 id="collection-title">A tropa da resenha</h2><p>21 personagens em voxel • escolha um para ver em 3D</p><div id="collection-grid"></div><small>Personagens de cultura pop em homenagens estilizadas de fã.</small></div></section><section id="profile-panel" class="social-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="profile-title"><div class="social-card"><button id="profile-close" class="close-social" aria-label="Fechar perfil">✕</button><span class="social-kicker">SEU PASSAPORTE PARA O CÉU</span><h2 id="profile-title">Bora voar, <span id="profile-name">Porco Visitante</span>?</h2><p id="profile-mode"></p><form id="nickname-form"><label for="nickname">Seu apelido</label><div class="nickname-row"><input id="nickname" maxlength="18" minlength="3" autocomplete="nickname" required><button id="nickname-save" class="secondary" type="submit">SALVAR</button></div></form><div class="profile-stats"><div><small>MAIOR PONTUAÇÃO</small><strong id="profile-best">0 canos</strong></div><div><small>MOEDAS DISPONÍVEIS</small><strong id="profile-coins">0</strong></div><div><small>SKINS ADQUIRIDAS</small><strong id="profile-skins">4 / 21</strong></div><div><small>MOEDAS COLETADAS</small><strong id="profile-earned">0</strong></div><div><small>PARTIDAS</small><strong id="profile-runs">0</strong></div></div><form id="account-form"><div class="auth-tabs"><button type="button" id="auth-login" class="secondary" aria-pressed="true">ENTRAR</button><button type="button" id="auth-register" class="secondary" aria-pressed="false">CRIAR CONTA</button></div><label for="auth-username">Nome de usuário</label><input id="auth-username" name="username" autocomplete="username" minlength="3" maxlength="18" pattern="[a-zA-Z0-9_]{3,18}" placeholder="seu_nome" required><label for="auth-password">Senha</label><input id="auth-password" name="password" type="password" autocomplete="current-password" minlength="12" maxlength="128" placeholder="Pelo menos 12 caracteres" required><div id="recovery-input-wrap" hidden><label for="auth-recovery">Código de recuperação</label><input id="auth-recovery" autocomplete="off" maxlength="64"></div><button id="account-submit" class="primary" type="submit">ENTRAR NO HANGAR ↗</button><button id="auth-recover" type="button" class="text-action">Esqueci minha senha</button><p id="auth-status" role="status" class="social-note"></p></form><div id="recovery-panel" hidden><strong>Guarde seu código de recuperação</strong><p>Ele permite redefinir a senha sem e-mail. Salve em um lugar seguro. Não compartilhe.</p><textarea id="recovery-code" readonly aria-label="Código de recuperação"></textarea><button id="recovery-saved" class="secondary">JÁ GUARDEI</button></div><button id="quick-play" class="secondary">JOGAR RÁPIDO</button><button id="logout" class="secondary" hidden>SAIR DA CONTA</button><p id="cloud-note" class="social-note"></p></div></section>
-<section id="ranking-panel" class="social-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="ranking-title"><div class="social-card"><button id="ranking-close" class="close-social" aria-label="Fechar ranking">✕</button><span class="social-kicker">OS MAIS VOADOS DO BRASIL</span><h2 id="ranking-title">Pódio dos Porcos</h2><label for="ranking-level">Dificuldade</label><select id="ranking-level"><option value="easy">De boa</option><option value="normal" selected>Na raça</option><option value="hard">Sem dó</option></select><div id="podium"></div><ol id="ranking-list" start="4"></ol><p id="ranking-status" role="status"></p></div></section>
-<section id="duel-panel" class="social-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="duel-title"><div class="social-card"><button id="duel-close" class="close-social" aria-label="Fechar duelo">✕</button><span class="social-kicker">UM CÉU. DOIS PORCOS.</span><h2 id="duel-title">Duelo 1 × 1</h2><p id="room-hint"></p><button id="room-create" class="primary">CRIAR SALA PRIVADA ↗</button><label for="room-code">Ou entre com o código do seu amigo</label><div class="nickname-row"><input id="room-code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="000000" autocomplete="off"><button id="room-join" class="secondary">ENTRAR</button></div><div id="room-lobby" hidden><strong id="room-code-display"></strong><p id="room-status" role="status"></p><div id="room-players"></div><button id="room-ready" class="primary">ESTOU PRONTO ✓</button><button id="room-leave" class="secondary">SAIR DA SALA</button></div><p class="social-note">Mesma sequência de obstáculos e largada sincronizada. Quem atravessar mais canos vence. Empates são possíveis. Desconexão por mais de 15 segundos encerra o voo na última pontuação validada.</p></div></section>
-<div id="countdown" hidden role="status"></div><div id="six-seven" hidden aria-live="polite"><strong>6 ✦ 7</strong><span>SIX SEVEN!</span></div>
-<div id="toast" role="status"></div><div id="loading">Preparando a decolagem…</div></body></html>
+  <link rel="stylesheet" crossorigin href="./assets/index-h1oJ6CPl.css">
+</head><body><canvas id="world" aria-label="Cenário tridimensional do jogo"></canvas><div class="bunting" aria-hidden="true"></div>
+<main id="menu">
+  <header id="top">
+    <a class="brand" href="#" aria-label="Voa Porco início">
+      <img class="official-logo" src="./logo-oficial.png" alt="Logo oficial Voa Porco da Silva" />
+      <span>VOA PORCO<small>BRASIL AFORA</small></span>
+    </a>
+    <div class="top-right">
+      <span class="build">BETA 1.2</span>
+      <span class="wallet"><span data-icon="coin"></span> <b id="wallet">0</b></span>
+      <button id="settings-open" class="icon-btn" aria-label="Ajustes"><span data-icon="gear"></span></button>
+    </div>
+  </header>
+
+  <nav class="rail rail-left" aria-label="Personagem e mapa">
+    <button id="porcos-open" class="rail-btn"><span data-icon="pig"></span><span>PORCOS</span></button>
+    <button id="maps-open" class="rail-btn"><span data-icon="map"></span><span>MAPAS</span></button>
+  </nav>
+  <nav class="rail rail-right" aria-label="Perfil e modos">
+    <button id="account-button" class="rail-btn"><span data-icon="user"></span><span id="account-label">PERFIL</span></button>
+    <button id="ranking-open" class="rail-btn"><span data-icon="trophy"></span><span>PÓDIO</span></button>
+    <button id="duel-open" class="rail-btn"><span data-icon="swords"></span><span>DUELO</span></button>
+  </nav>
+
+  <div class="menu-bottom">
+    <div class="pick">
+      <button id="prev-char" class="pick-arrow" aria-label="Personagem anterior"><span data-icon="arrow-left"></span></button>
+      <div class="pick-name">
+        <strong id="selected-name">Zé da Obra</strong>
+        <small id="pick-sub"></small>
+      </div>
+      <button id="next-char" class="pick-arrow" aria-label="Próximo personagem"><span data-icon="arrow-right"></span></button>
+    </div>
+    <button id="play" class="primary">BORA VOAR</button>
+    <p id="record" class="menu-record"></p>
+  </div>
+</main>
+
+<section id="porcos-panel" class="dialog" hidden role="dialog" aria-modal="true" aria-labelledby="porcos-title">
+  <div class="dialog-card">
+    <header class="dialog-head">
+      <h2 id="porcos-title">A tropa da resenha</h2>
+      <button class="close-btn" data-close="porcos-panel" aria-label="Fechar"><span data-icon="close"></span></button>
+    </header>
+    <div id="characters" class="pick-grid"></div>
+    <div class="detail">
+      <div class="detail-text">
+        <strong id="porco-name"></strong>
+        <p id="porco-desc"></p>
+        <span id="porco-cost"></span>
+      </div>
+      <button id="porco-action" class="primary"></button>
+    </div>
+    <small class="dialog-foot">Personagens de cultura pop em homenagens estilizadas de fã.</small>
+  </div>
+</section>
+
+<section id="maps-panel" class="dialog" hidden role="dialog" aria-modal="true" aria-labelledby="maps-title">
+  <div class="dialog-card">
+    <header class="dialog-head">
+      <h2 id="maps-title">Escolha o destino</h2>
+      <button class="close-btn" data-close="maps-panel" aria-label="Fechar"><span data-icon="close"></span></button>
+    </header>
+    <div id="maps" class="pick-grid pick-grid-maps"></div>
+    <div class="detail">
+      <div class="detail-text">
+        <span id="map-tag"></span>
+        <p id="map-desc"></p>
+        <span id="map-record"></span>
+      </div>
+      <button id="map-action" class="primary"></button>
+    </div>
+    <div class="levels" role="group" aria-label="Dificuldade">
+      <span class="levels-label">DIFICULDADE</span>
+      <button class="secondary" data-level="easy" aria-pressed="false">De boa</button>
+      <button class="secondary" data-level="normal" aria-pressed="true">Na raça</button>
+      <button class="secondary" data-level="hard" aria-pressed="false">Sem dó</button>
+    </div>
+  </div>
+</section>
+
+<section id="settings-panel" class="dialog" hidden role="dialog" aria-modal="true" aria-labelledby="settings-title">
+  <div class="dialog-card dialog-small">
+    <header class="dialog-head">
+      <h2 id="settings-title">Ajustes</h2>
+      <button class="close-btn" data-close="settings-panel" aria-label="Fechar"><span data-icon="close"></span></button>
+    </header>
+    <div class="settings-list">
+      <button id="sound" class="secondary" aria-label="Ativar ou desativar áudio">SOM ON</button>
+      <button id="music-toggle" class="secondary">♫ MÚSICA ON</button>
+      <button id="quality" class="secondary">3D ALTO</button>
+    </div>
+    <small class="dialog-foot">Espaço, seta para cima ou toque fazem o porco voar. Esc ou P pausam.</small>
+  </div>
+</section>
+
+<section id="hud" hidden>
+  <div class="stat">
+    <small>PONTUAÇÃO</small>
+    <strong id="score">0</strong>
+    <span>CANOS</span>
+  </div>
+  <div class="flight-info">
+    <span id="flight-map"></span>
+    <span id="rival-distance" hidden></span>
+    <span class="coins"><span data-icon="coin"></span> <b id="run-coins">0</b></span>
+    <button id="pause" class="icon-btn"></button>
+  </div>
+  <div class="flight-hint">Toque na tela para bater as asas</div>
+</section>
+<section id="modal" hidden role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="modal-card">
+    <span class="eyebrow" id="modal-eyebrow"></span>
+    <h2 id="modal-title"></h2>
+    <p id="modal-text"></p>
+    <div id="results">
+      <div><span>CANOS</span><b id="result-score">0</b></div>
+      <div><span>MOEDAS</span><b id="result-coins">0</b></div>
+      <div><span>RECORDE</span><b id="result-best">0</b></div>
+    </div>
+    <button id="resume" class="primary">CONTINUAR VOO <span data-icon="arrow-right"></span></button>
+    <button id="continue-run" class="primary" hidden></button>
+    <p id="continue-note"></p>
+    <button id="retry" class="primary">MAIS UMA TENTATIVA <span data-icon="arrow-right"></span></button>
+    <button id="home" class="secondary">VOLTAR AO MENU</button>
+  </div>
+</section>
+<section id="profile-panel" class="dialog" hidden role="dialog" aria-modal="true" aria-labelledby="profile-title">
+  <div class="dialog-card">
+    <header class="dialog-head">
+      <div>
+        <span class="kicker">SEU PASSAPORTE PARA O CÉU</span>
+        <h2 id="profile-title">Bora voar, <span id="profile-name">Porco Visitante</span>?</h2>
+      </div>
+      <button id="profile-close" class="close-btn" aria-label="Fechar perfil"><span data-icon="close"></span></button>
+    </header>
+    <p id="profile-mode" class="social-note"></p>
+    <form id="nickname-form">
+      <label for="nickname">Seu apelido</label>
+      <div class="nickname-row">
+        <input id="nickname" maxlength="18" minlength="3" autocomplete="nickname" required />
+        <button id="nickname-save" class="secondary" type="submit">SALVAR</button>
+      </div>
+    </form>
+    <div class="profile-stats">
+      <div><small>MAIOR PONTUAÇÃO</small><strong id="profile-best">0 canos</strong></div>
+      <div><small>MOEDAS DISPONÍVEIS</small><strong id="profile-coins">0</strong></div>
+      <div><small>SKINS ADQUIRIDAS</small><strong id="profile-skins">4 / 21</strong></div>
+      <div><small>MOEDAS COLETADAS</small><strong id="profile-earned">0</strong></div>
+      <div><small>PARTIDAS</small><strong id="profile-runs">0</strong></div>
+    </div>
+    <form id="account-form">
+      <div class="auth-tabs">
+        <button type="button" id="auth-login" class="secondary" aria-pressed="true">ENTRAR</button>
+        <button type="button" id="auth-register" class="secondary" aria-pressed="false">CRIAR CONTA</button>
+      </div>
+      <label for="auth-username">Nome de usuário</label>
+      <input id="auth-username" name="username" autocomplete="username" minlength="3" maxlength="18" pattern="[a-zA-Z0-9_]{3,18}" placeholder="seu_nome" required />
+      <label for="auth-password">Senha</label>
+      <input id="auth-password" name="password" type="password" autocomplete="current-password" minlength="12" maxlength="128" placeholder="Pelo menos 12 caracteres" required />
+      <div id="recovery-input-wrap" hidden>
+        <label for="auth-recovery">Código de recuperação</label>
+        <input id="auth-recovery" autocomplete="off" maxlength="64" />
+      </div>
+      <button id="account-submit" class="primary" type="submit">ENTRAR</button>
+      <button id="auth-recover" type="button" class="text-action">Esqueci minha senha</button>
+      <p id="auth-status" role="status" class="social-note"></p>
+    </form>
+    <div id="recovery-panel" hidden>
+      <strong>Guarde seu código de recuperação</strong>
+      <p>Ele permite redefinir a senha sem e-mail. Salve em um lugar seguro. Não compartilhe.</p>
+      <textarea id="recovery-code" readonly aria-label="Código de recuperação"></textarea>
+      <button id="recovery-saved" class="secondary">JÁ GUARDEI</button>
+    </div>
+    <button id="quick-play" class="secondary">JOGAR RÁPIDO</button>
+    <button id="logout" class="secondary" hidden>SAIR DA CONTA</button>
+    <p id="cloud-note" class="social-note"></p>
+  </div>
+</section>
+
+<section id="ranking-panel" class="dialog" hidden role="dialog" aria-modal="true" aria-labelledby="ranking-title">
+  <div class="dialog-card">
+    <header class="dialog-head">
+      <div>
+        <span class="kicker">OS MAIS VOADOS DO BRASIL</span>
+        <h2 id="ranking-title">Pódio dos Porcos</h2>
+      </div>
+      <button id="ranking-close" class="close-btn" aria-label="Fechar ranking"><span data-icon="close"></span></button>
+    </header>
+    <label for="ranking-level">Dificuldade</label>
+    <select id="ranking-level">
+      <option value="easy">De boa</option>
+      <option value="normal" selected>Na raça</option>
+      <option value="hard">Sem dó</option>
+    </select>
+    <div id="podium"></div>
+    <ol id="ranking-list" start="4"></ol>
+    <p id="ranking-status" role="status" class="social-note"></p>
+  </div>
+</section>
+
+<section id="duel-panel" class="dialog" hidden role="dialog" aria-modal="true" aria-labelledby="duel-title">
+  <div class="dialog-card">
+    <header class="dialog-head">
+      <div>
+        <span class="kicker">UM CÉU. DOIS PORCOS.</span>
+        <h2 id="duel-title">Duelo 1 × 1</h2>
+      </div>
+      <button id="duel-close" class="close-btn" aria-label="Fechar duelo"><span data-icon="close"></span></button>
+    </header>
+    <p id="room-hint" class="social-note"></p>
+    <button id="room-create" class="primary">CRIAR SALA PRIVADA</button>
+    <label for="room-code">Ou entre com o código do seu amigo</label>
+    <div class="nickname-row">
+      <input id="room-code" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" placeholder="000000" autocomplete="off" />
+      <button id="room-join" class="secondary">ENTRAR</button>
+    </div>
+    <div id="room-lobby" hidden>
+      <strong id="room-code-display"></strong>
+      <p id="room-status" role="status"></p>
+      <div id="room-players"></div>
+      <button id="room-ready" class="primary">ESTOU PRONTO <span data-icon="check"></span></button>
+      <button id="room-leave" class="secondary">SAIR DA SALA</button>
+    </div>
+    <p class="social-note">Mesma sequência de obstáculos e largada sincronizada. Quem atravessar mais canos vence. Empates são possíveis. Desconexão por mais de 15 segundos encerra o voo na última pontuação validada.</p>
+  </div>
+</section>
+<div id="countdown" hidden role="status"></div>
+<div id="six-seven" hidden aria-live="polite">
+  <strong>6 <span data-icon="star"></span> 7</strong>
+  <span>SIX SEVEN!</span>
+</div>
+<div id="toast" role="status"></div>
+<div id="loading">Preparando a decolagem…</div></body></html>
 
