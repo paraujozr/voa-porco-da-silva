@@ -368,8 +368,10 @@ export class Game {
       $('result-best').textContent = this.bestRecord();
       this.updateContinue();
     } catch (e) {
+      // Say why: the server's reason (e.g. "Replay inválido") is what lets a bug report be acted on.
       $('continue-note').textContent =
-        'Não foi possível salvar. Voltar ou tentar novamente fará uma nova tentativa.';
+        `Não foi possível salvar: ${e.message} Voltar ou tentar novamente fará uma nova tentativa.`;
+      console.error('settleRun failed:', e.code, e.message);
       this.settlement = null;
       this.ticket.needsSettle = true;
       toast(e.message);
