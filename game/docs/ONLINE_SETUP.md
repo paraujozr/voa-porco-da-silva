@@ -30,3 +30,6 @@ WebSockets usam hibernação. Limites por IP/conta protegem autenticação; sess
 
 ## Firebase anterior
 A Beta 1.2 não usa Firebase. O adaptador de Cloud Functions, as regras do Firestore e a configuração do emulador foram removidos; estão no histórico do git (commit 91d9d84 e anteriores). O projeto Firebase criado permanece no plano gratuito, sem Functions publicadas; não ative o plano Blaze por causa deste projeto.
+
+## Duração das partidas
+Solo: até 60 minutos, com aviso no último minuto e resultado salvo ao concluir. Duelo: 3 minutos. O orçamento de replay é limitado no servidor. O limite solo antigo de 10 minutos encerrava o modo normal perto de 300 canos; foi corrigido em 19/10/2026.

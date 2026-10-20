@@ -1,8 +1,10 @@
 // Gates and coins appear this far (world units) ahead of the pig. Wider than any supported
 // screen (21:9 shows ~33 units to the right of the pig), so they never pop in on screen.
 export const SPAWN_X = 34;
+// Keep a bounded replay budget on the server, without ending normal flights near 300 pipes.
+export const SOLO_SECONDS = 60 * 60;
 export const DT = 1 / 120,
-  MAX_TICKS = 120 * 600,
+  MAX_TICKS = 120 * SOLO_SECONDS,
   DUEL_TICKS = 120 * 180,
   CONTINUE_LIMIT = 3;
 export const LEVELS = {

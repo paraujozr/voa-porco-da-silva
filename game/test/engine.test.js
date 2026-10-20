@@ -85,3 +85,50 @@ test('apelido normaliza e rejeita marcação', () => {
   assert.equal(nickname('  Zé   Porco '), 'Zé Porco');
   assert.throws(() => nickname('<script>'));
 });
+
+// Real physics/collisions: no seeded score or invulnerability.
+test('voo longo atravessa 1.000 canos e o servidor valida o resultado', () => {
+  for (const level of ['easy', 'normal', 'hard']) {
+    const run = createRun(19, level),
+      inputs = [];
+    let maxGates = 0,
+      maxTokens = 0,
+      events = 0;
+    while (!run.dead && run.passed < 1000) {
+      const target = run.gates.find(g => g.x > -1.6)?.center ?? 1;
+      const flap = run.y < target - 0.5 && run.v < 0;
+      if (flap) inputs.push(run.tick);
+      events += !!advance(run, flap).sixSeven;
+      maxGates = Math.max(maxGates, run.gates.length);
+      maxTokens = Math.max(maxTokens, run.tokens.length);
+    }
+    assert.equal(run.dead, false, `${level}: ${run.reason} aos ${run.passed} canos`);
+    assert.equal(run.passed, 1000);
+    assert.ok(run.tick > 120 * 600);
+    assert.equal(events, 1);
+    assert.ok(maxGates < 10);
+    assert.ok(maxTokens < 30);
+    const copy = replay({seed: 19, level, inputs, ticks: run.tick});
+    for (const key of ['passed', 'coins', 'tick', 'dead', 'y']) assert.equal(copy[key], run[key]);
+    const saved = credit(freshProfile(), copy);
+    assert.equal(saved.ranked[level], 1000);
+    assert.ok(JSON.stringify({inputs, ticks: run.tick}).length < 200000);
+  }
+});
+
+test('limites explícitos: solo de uma hora e duelo de três minutos', () => {
+  const solo = createRun(19, 'normal');
+  solo.tick = 120 * 600 - 1;
+  assert.equal(advance(solo).dead, false);
+  solo.tick = 120 * 3600 - 1;
+  advance(solo);
+  assert.equal(solo.reason, 'limit');
+  const duel = createRun(19, 'normal', true);
+  duel.tick = 120 * 180 - 1;
+  advance(duel);
+  assert.equal(duel.reason, 'limit');
+  assert.throws(
+    () => replay({seed: 19, level: 'normal', ticks: 120 * 3600 + 1, inputs: []}),
+    /Replay inválido/,
+  );
+});

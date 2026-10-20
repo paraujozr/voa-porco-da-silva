@@ -1,7 +1,16 @@
 import * as T from 'three';
 import {MAPS, PIGS, MEMES} from './config.js';
 import {DIFFICULTY_NAMES} from './difficulty.js';
-import {createRun, advance, revive, continuePrice, DT, LEVELS} from '../core/engine.js';
+import {
+  createRun,
+  advance,
+  revive,
+  continuePrice,
+  DT,
+  MAX_TICKS,
+  SOLO_SECONDS,
+  LEVELS,
+} from '../core/engine.js';
 import {animatePig} from './animation.js';
 import {makePig, disposeGroup} from './pig.js';
 import {buildWorld} from './world.js';
@@ -333,11 +342,15 @@ export class Game {
     if (this.state !== STATE.PLAYING) return;
     const {run, duel} = this;
     this.setState(STATE.OVER);
-    this.music.fail();
+    if (run.reason === 'limit') this.music.stop();
+    else this.music.fail();
     showModal({
       eyebrow: duel ? 'DUELO EM ANDAMENTO' : 'POUSO NÃO PROGRAMADO',
       title: run.reason === 'limit' ? 'Voo concluído!' : 'Deu ruim, parceiro!',
-      text: `${this.save.nickname}, você atravessou ${run.passed} canos.`,
+      text:
+        run.reason === 'limit' && !duel
+          ? `Sessão de ${SOLO_SECONDS / 60} minutos concluída: ${run.passed} canos. Seu resultado será salvo; você pode começar outro voo.`
+          : `${this.save.nickname}, você atravessou ${run.passed} canos.`,
       results: true,
       retry: !duel,
       note: duel ? 'Aguardando o resultado do duelo…' : 'Salvando a partida…',
@@ -490,6 +503,8 @@ export class Game {
   // ---- simulation & frame loop ----
   step() {
     const {run} = this;
+    if (!this.duel && run.tick === MAX_TICKS - 120 * 60)
+      toast('Falta 1 minuto para concluir esta sessão. Seu resultado será salvo.');
     if (this.pendingFlap) {
       this.inputs.push(run.tick);
     }
