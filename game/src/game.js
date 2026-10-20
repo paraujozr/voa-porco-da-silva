@@ -19,6 +19,8 @@ const MENU_Z = 4;
 const ROAD_Y = -4.8;
 // The pig is the same size in the menu and in flight: only the camera moves.
 const PIG_SCALE = 0.68;
+// The pig sits this far behind its flight position (world units): taking off is a hop forward.
+const TAKEOFF_RUN = 3.2;
 
 // Values double as <body> class names (see the CSS), so keep them stable.
 export const STATE = {
@@ -601,21 +603,30 @@ export class Game {
       prop.group.visible = false;
   }
 
+  // World x of the menu seat: behind the pig's flight position, so takeoff moves it forward.
+  menuSeatX() {
+    return this.stage.playerX - TAKEOFF_RUN;
+  }
+
   // Menu camera: a close-up of the pig and its prop standing on the real road, framed between the
-  // top bar and the name bar. Zoom is as tight as the free area allows.
+  // top bar and the name bar. The pig sits at the same screen position it has in flight, so the
+  // zoom-out never drags it backwards across the screen; zoom is as tight as the free area allows.
   menuView() {
     const {stage, prop} = this;
     const unit = innerHeight / 20;
     const top = $('top').getBoundingClientRect().bottom + 8;
     const bottom = document.querySelector('.menu-bottom').getBoundingClientRect().top - 14;
     const propH = prop.height * PIG_SCALE,
-      propW = prop.width * PIG_SCALE;
-    const widthShare = innerWidth <= 680 ? 0.95 : 0.7;
+      propHalf = (prop.width * PIG_SCALE) / 2;
+    // The pig is left of centre (like in flight): keep the prop's left edge on screen.
+    const lead = Math.abs(stage.playerX) / stage.halfWidth;
+    const leftLimit = innerWidth <= 680 ? 1.15 : 0.9;
     const fit = Math.min(
       (bottom - top) / (propH * unit * 1.05),
-      (stage.halfWidth * 2 * widthShare) / propW,
+      ((leftLimit - lead) * stage.halfWidth) / propHalf,
     );
-    const view = {zoom: Math.min(3.4, Math.max(1.2, fit)), x: 0, y: DEFAULT_VIEW.y};
+    const zoom = Math.min(3.4, Math.max(1.2, fit));
+    const view = {zoom, x: this.menuSeatX() - stage.playerX / zoom, y: DEFAULT_VIEW.y};
     // Slide the camera until the road meets the bottom of the free area.
     for (let i = 0; i < 3; i++) {
       stage.setView(view);
@@ -628,13 +639,14 @@ export class Game {
   tickMenuPig() {
     const {pig, prop, time, stage} = this;
     stage.setView(this.menuView());
+    const seatX = this.menuSeatX();
     prop.group.scale.setScalar(PIG_SCALE);
-    prop.group.position.set(0, ROAD_Y, MENU_Z);
+    prop.group.position.set(seatX - prop.seat.x * PIG_SCALE, ROAD_Y, MENU_Z);
     pig.visible = prop.group.visible;
     pig.scale.setScalar(PIG_SCALE);
     // The pig's bottom sits about 1.03 below its origin.
     pig.position.set(
-      prop.seat.x * PIG_SCALE,
+      seatX,
       ROAD_Y + (prop.seat.y + 1.03) * PIG_SCALE,
       MENU_Z + prop.seat.z * PIG_SCALE,
     );

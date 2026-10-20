@@ -225,6 +225,8 @@ export function flowerBeds(parent, map) {
 // Patches of lighter and darker ground break up the flat colour. Like the flower beds they sit in
 // a scrolling layer (70 units wide).
 export function groundPatches(parent, map) {
+  const patches = new T.Group();
+  parent.add(patches);
   const base = new T.Color(map.ground);
   const hash = n => {
     const x = Math.sin(n * 91.7 + 17.3) * 43758.5453;
@@ -235,7 +237,7 @@ export function groundPatches(parent, map) {
     const w = 1.2 + hash(i) * 2.6,
       d = 0.5 + hash(i + 50) * 1.3;
     box(
-      parent,
+      patches,
       shades[i % shades.length],
       -35 + hash(i + 100) * 70,
       -4.82,
@@ -245,4 +247,29 @@ export function groundPatches(parent, map) {
       d,
     );
   }
+  return patches;
+}
+
+// The wavy black-and-white stripes of the Rio calçadão, as a tiling pixel texture (one tile is
+// 14 world units wide and 7 deep). Returns null without a DOM (tests).
+export const CALCADAO_TILE = 14;
+export function calcadaoTexture() {
+  if (typeof document === 'undefined') return null;
+  const c = document.createElement('canvas');
+  c.width = 64;
+  c.height = 32;
+  const ctx = c.getContext('2d');
+  for (let y = 0; y < 32; y++)
+    for (let x = 0; x < 64; x++) {
+      const wave = Math.round(5 * Math.sin((x / 64) * Math.PI * 4));
+      ctx.fillStyle = ((y + wave + 32) >> 3) % 2 ? '#1f2b33' : '#f3ede0';
+      ctx.fillRect(x, y, 1, 1);
+    }
+  const t = new T.CanvasTexture(c);
+  t.magFilter = T.NearestFilter;
+  t.minFilter = T.NearestFilter;
+  t.wrapS = t.wrapT = T.RepeatWrapping;
+  t.repeat.set(200 / CALCADAO_TILE, 28.5 / (CALCADAO_TILE / 2));
+  t.colorSpace = T.SRGBColorSpace;
+  return t;
 }

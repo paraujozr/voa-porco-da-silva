@@ -59,7 +59,8 @@ A tela inicial é a própria cena 3D: a câmera faz um close no porco sentado nu
 (`menu-scene.js`), de pé na estrada de verdade, e a UI é uma moldura fina em volta (barra do topo,
 trilhos laterais, barra de nome e BORA VOAR). Porcos, Mapas e Ajustes abrem como diálogos; comprar
 skin ou mapa acontece dentro deles. Ao jogar, `Game` entra em `TAKEOFF` (~0,9 s): o menu sai em
-degraus, o porco salta do assento e a câmera dá um zoom out até o enquadramento do jogo (`viewPose`
+degraus, o porco salta do assento (que fica 3,2 unidades atrás da posição de voo e na mesma posição
+da tela, então ele sai para a frente, nunca para trás) e a câmera dá um zoom out até o enquadramento do jogo (`viewPose`
 em `takeoff.js`, aplicado por `Stage.setView`), como se a partida começasse dentro do cenário. O
 objeto fica para trás e rola para fora com a camada próxima. A partida começa quando o zoom termina
 e o bilhete do servidor chega.

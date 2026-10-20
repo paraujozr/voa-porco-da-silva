@@ -68,15 +68,26 @@ function cipo({b, pivot, motion}) {
   return {seat: {x: 0, y: 0.89, z: -0.1}, width: 5.4, height: 3.7};
 }
 
-// Rio de Janeiro: low sea wall with the calçadão wave pattern, a beach umbrella and a palm.
+// Rio de Janeiro: a striped beach chair on the calçadão, with an umbrella, palm, towel and board.
 function rio({b, pivot, motion}) {
-  b(0xd5c8aa, 0, 0.1, -0.1, 3.5, 0.2, 1.05);
-  b(0xeadfc6, 0, 0.55, -0.1, 3.3, 0.7, 0.85);
-  for (let row = 0; row < 2; row++)
-    for (let i = 0; i < 16; i++) {
-      const dark = (i + row) % 2 === 0;
-      b(dark ? 0x1f2b33 : 0xf3ede0, -1.5 + i * 0.2, 0.905, 0.2 - row * 0.3, 0.2, 0.02, 0.3);
-    }
+  const fabric = [0x2f8fd0, 0xfff4d6];
+  const metal = 0xaab4bb;
+  const wood = 0xb9794a;
+  for (let i = 0; i < 5; i++) b(fabric[i % 2], 0, 0.5, -0.4 + i * 0.22, 1.5, 0.07, 0.2);
+  // The back leans away from the camera.
+  const back = pivot(0, 0.52, -0.5);
+  back.rotation.x = -0.5;
+  for (let i = 0; i < 6; i++) b(fabric[i % 2], 0, 0.1 + i * 0.22, 0, 1.5, 0.2, 0.06, 0, back);
+  for (const x of [-0.85, 0.85]) {
+    b(metal, x, 0.25, 0.5, 0.07, 0.5, 0.07);
+    b(metal, x, 0.25, -0.5, 0.07, 0.5, 0.07);
+    b(metal, x, 0.5, 0, 0.07, 0.06, 1.1);
+    const post = pivot(x, 0.52, -0.5);
+    post.rotation.x = -0.5;
+    b(metal, 0, 0.7, 0, 0.07, 1.4, 0.07, 0, post);
+    b(wood, x * 1.12, 0.84, 0.05, 0.1, 0.06, 0.8);
+    b(wood, x * 1.12, 0.66, 0.42, 0.07, 0.34, 0.07);
+  }
   b(0xffffff, 2.3, 1.45, -0.5, 0.07, 2.9, 0.07);
   const umbrella = pivot(2.3, 2.85, -0.5);
   [
@@ -94,8 +105,11 @@ function rio({b, pivot, motion}) {
     b(0x2f8f4e, 0, 0.55, 0, 0.22, 1.1, 0.14, 0, leaf);
   }
   motion.push(t => (crown.rotation.z = Math.sin(t * 0.8) * 0.04));
-  b(0xe8b35a, 1.75, 0.55, 0.45, 0.28, 1.4, 0.06, -0.25);
-  return {seat: {x: 0, y: 0.9, z: 0}, width: 6.0, height: 3.8};
+  // A beach towel and a surfboard stuck in the sand.
+  for (let i = 0; i < 5; i++)
+    b(i % 2 ? 0xfff4d6 : 0xc93c2c, 1.45 + i * 0.2, 0.02, 0.85, 0.2, 0.03, 0.9);
+  b(0xe8b35a, -1.55, 0.7, 0.2, 0.28, 1.4, 0.06, -0.2);
+  return {seat: {x: 0, y: 0.54, z: 0.05}, width: 6.0, height: 3.7};
 }
 
 // Brasília: white stepped ramp up to a dome, with a waving flag.
@@ -121,28 +135,52 @@ function brasilia({b, pivot, motion, group}) {
   return {seat: {x: 1.05, y: 0.9, z: 0}, width: 6.3, height: 3.6};
 }
 
+// A horizontal voxel log: grooved bark, mossy top and pale growth rings on the cut ends.
+function barkLog() {
+  const size = 0.08,
+    length = 3.1,
+    radius = 0.54;
+  const v = new Voxels(size);
+  const half = Math.round(length / 2 / size),
+    r = Math.round(radius / size),
+    centre = Math.round(0.52 / size);
+  const ring = [0xdcb883, 0xc59a63, 0xdcb883, 0xb88a52];
+  for (let x = -half; x <= half; x++)
+    for (let y = -r; y <= r; y++)
+      for (let z = -r; z <= r; z++) {
+        const d = Math.hypot(y, z);
+        if (d > r) continue;
+        const angle = Math.atan2(z, y);
+        let color;
+        if (Math.abs(x) === half)
+          color = d < 1.5 ? 0xa87b45 : ring[Math.min(3, Math.floor((d / r) * 4))];
+        else if (d < r - 1.2)
+          continue; // hollow: only the outer shell matters
+        else {
+          const groove = Math.sin(angle * 11 + Math.sin(x * 0.9 + angle * 2) * 2.2) > 0.4;
+          const moss = y > r * 0.35 && Math.sin(x * 0.45 + angle * 3) > 0.15;
+          color = moss ? (groove ? 0x3f7a3a : 0x4f8a45) : groove ? 0x4a2f1c : 0x6e4a2b;
+        }
+        v.set(x, y + centre, z, color);
+      }
+  return v.build();
+}
+
 // Amazônia: fallen mossy log with mushrooms and a toucan.
-function amazonia({b, pivot, motion, group}) {
-  const log = new Voxels(0.1);
-  log.ellipsoid(0, 0, 0, 1.7, 0.5, 0.5, (x, y) =>
-    Math.sin(x * 8 + y * 5) > 0.45 ? 0x5a3d25 : 0x6b4a2e,
-  );
-  const logMesh = log.build();
-  logMesh.position.set(0, 0.45, 0);
-  group.add(logMesh);
-  b(0xc79a62, -1.62, 0.45, 0, 0.08, 0.84, 0.84);
-  b(0xa87b45, -1.66, 0.45, 0, 0.06, 0.5, 0.5);
-  b(0x3f7f45, -0.9, 0.93, 0.05, 0.9, 0.06, 0.5);
-  b(0x4f9650, 0.9, 0.9, -0.05, 0.6, 0.06, 0.45);
-  for (const [x, z, s] of [
-    [1.2, 0.5, 1],
-    [1.5, 0.35, 0.7],
+function amazonia({b, pivot, motion}) {
+  // Turn the whole set a little so the pale growth rings of the cut end face the camera.
+  const set = pivot(0, 0, 0);
+  set.rotation.y = 0.55;
+  set.add(barkLog());
+  for (const [x, z, k] of [
+    [1.15, 0.62, 1],
+    [1.45, 0.45, 0.7],
   ]) {
-    b(0xf2e8d0, x, 0.15 * s, z, 0.1 * s, 0.3 * s, 0.1 * s);
-    b(0xd13b2f, x, 0.34 * s, z, 0.32 * s, 0.14 * s, 0.32 * s);
-    b(0xffffff, x, 0.42 * s, z, 0.1 * s, 0.04 * s, 0.1 * s);
+    b(0xf2e8d0, x, 0.15 * k, z, 0.1 * k, 0.3 * k, 0.1 * k, 0, set);
+    b(0xd13b2f, x, 0.34 * k, z, 0.32 * k, 0.14 * k, 0.32 * k, 0, set);
+    b(0xffffff, x, 0.42 * k, z, 0.1 * k, 0.04 * k, 0.1 * k, 0, set);
   }
-  const toucan = pivot(-1.25, 1.0, 0.1);
+  const toucan = pivot(-1.0, 1.0, 0.1, set);
   b(0x1d2530, 0, 0.3, 0, 0.36, 0.55, 0.32, 0, toucan);
   b(0xf6f0dc, 0.12, 0.28, 0.02, 0.14, 0.3, 0.3, 0, toucan);
   const head = pivot(0.04, 0.68, 0, toucan);
@@ -155,11 +193,11 @@ function amazonia({b, pivot, motion, group}) {
     head.rotation.y = Math.sin(t * 0.9) * 0.4;
   });
   for (let i = 0; i < 5; i++) {
-    const frond = pivot(1.9 + (i % 2) * 0.12, 0, -0.2);
+    const frond = pivot(1.9 + (i % 2) * 0.12, 0, -0.2, set);
     frond.rotation.z = -0.5 - i * 0.28;
     b(0x2f8f4e, 0, 0.5, 0, 0.12, 1.0, 0.1, 0, frond);
   }
-  return {seat: {x: 0.2, y: 0.95, z: 0}, width: 5.2, height: 3.6};
+  return {seat: {x: 0, y: 1.02, z: 0}, width: 5.2, height: 3.6};
 }
 
 const BUILDERS = {cipo, rio, brasilia, amazonia};

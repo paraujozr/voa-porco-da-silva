@@ -1,6 +1,14 @@
 import * as T from 'three';
 import {Voxels, mat, box, mesh, label} from './pig.js';
-import {detailedTree, detailedHouse, enrichWorld, flowerBeds, groundPatches} from './scenery.js';
+import {
+  detailedTree,
+  detailedHouse,
+  enrichWorld,
+  flowerBeds,
+  groundPatches,
+  calcadaoTexture,
+  CALCADAO_TILE,
+} from './scenery.js';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 const rnd = n => {
   const x = Math.sin(n * 127.1 + 311.7) * 43758.5453;
@@ -222,8 +230,23 @@ export function buildWorld(scene, map) {
     b(group, 0xb8b199, 0, -4.79, 8.55, 200, 0.09, 0.12);
   }
   // The road (or promenade / dirt track) in front of the scenery.
-  const roadColor = {cipo: 0x4c5d65, rio: 0xe6dcc3, brasilia: 0x939a9e, amazonia: 0x7a6444};
-  b(group, roadColor[map.id], 0, -5.05, 5, 200, 0.5, 7);
+  const roadColor = {cipo: 0x4c5d65, rio: 0xe6dcc3, brasilia: 0x939a9e, amazonia: 0xb89b6a};
+  let calcadao = null;
+  if (map.id === 'rio') {
+    // Rio: the whole foreground is the striped promenade, scrolling with the near layer.
+    calcadao = calcadaoTexture();
+    if (calcadao) {
+      const floor = new T.Mesh(
+        new T.PlaneGeometry(200, 28.5),
+        new T.MeshLambertMaterial({map: calcadao}),
+      );
+      floor.rotation.x = -Math.PI / 2;
+      floor.position.set(0, -4.8, 15.75);
+      floor.receiveShadow = true;
+      floor.userData.ground = true;
+      group.add(floor);
+    }
+  } else b(group, roadColor[map.id], 0, -5.05, 5, 200, 0.5, 7);
   const far = root(group, 0, 0, -48);
   for (let layer = 0; layer < 3; layer++) {
     const v = new Voxels(0.55);
@@ -272,11 +295,12 @@ export function buildWorld(scene, map) {
       }
     }
   }
+  const groundRoots = []; // ground decoration: batched apart so it keeps receiving shadows
   for (let k = 0; k < 2; k++) {
     const mid = root(group, k * 70, 0, 0);
     skyline(mid, map.id);
     flowerBeds(mid, map);
-    groundPatches(mid, map);
+    groundRoots.push(groundPatches(mid, map));
     layers.push({g: mid, start: k * 70, speed: 0.43});
     const near = root(group, k * 70, 0, 0);
     for (let i = 0; i < 14; i++) {
@@ -284,8 +308,7 @@ export function buildWorld(scene, map) {
       if (map.id === 'cipo') {
         b(near, 0xeee5bf, xx, -4.77, 4.5, 2, 0.05, 0.16);
       } else if (map.id === 'rio') {
-        for (let j = 0; j < 4; j++)
-          b(near, j % 2 ? 0x314f58 : 0xece8d4, xx + j * 0.4, -4.77, 4.5 + j * 0.3, 0.55, 0.08, 0.6);
+        // nothing: the striped promenade texture is the floor here
       } else if (map.id === 'brasilia') {
         b(near, 0xf1efe0, xx, -4.77, 4.5, 2, 0.05, 0.16);
       } else b(near, map.id === 'amazonia' ? 0x397b52 : 0x668a5d, xx, -4.7, 6, 0.6, 0.3, 0.6);
@@ -320,7 +343,7 @@ export function buildWorld(scene, map) {
   enrichWorld(group, map, movers);
   // Bake static boxes into material batches; moving objects and parallax layers stay independent.
   const dynamic = new Set(movers.map(a => a.g)),
-    layerRoots = new Set(layers.map(a => a.g));
+    layerRoots = new Set([...layers.map(a => a.g), ...groundRoots]);
   group.updateMatrixWorld(true);
   function batch(root) {
     const bins = new Map(),
@@ -355,7 +378,21 @@ export function buildWorld(scene, map) {
     }
   }
   layers.forEach(l => batch(l.g));
+  groundRoots.forEach(g => batch(g));
   batch(group);
+  // Scenery (houses, trees, signs) is lit flat: receiving shadows made roofs and neighbours stripe
+  // the walls. Only the ground (and its decoration) shows shadows.
+  const groundColors = new Set(
+    [map.ground, map.water, roadColor[map.id], 0xd9d2bd, 0xe3dcc6, 0xb8b199].map(c =>
+      new T.Color(c).getHex(),
+    ),
+  );
+  group.traverse(o => {
+    if (!o.isMesh || !o.material.color) return;
+    let onGround = o.userData.ground || groundColors.has(o.material.color.getHex());
+    for (let p = o; p && !onGround; p = p.parent) onGround = groundRoots.includes(p);
+    o.receiveShadow = onGround;
+  });
   return {
     group,
     update(t, dt = 0, playing = false, speed = 5.5) {
@@ -364,6 +401,7 @@ export function buildWorld(scene, map) {
         l.g.position.x = ((((l.start - distance * l.speed + 70) % 140) + 140) % 140) - 70;
       }
       far.position.x = -Math.sin(distance / 180) * 4;
+      if (calcadao) calcadao.offset.x = (distance * 0.85) / CALCADAO_TILE;
       const sunWarm = (Math.sin(t * 0.018) + 1) * 0.5;
       scene.background.set(map.sky).lerp(new T.Color(0xf2c391), sunWarm * 0.15);
       for (const a of movers) {

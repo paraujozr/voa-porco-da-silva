@@ -11,7 +11,9 @@ test('cada mapa tem um objeto de menu', () => {
 test('os objetos constroem, têm assento válido e animam sem NaN', () => {
   for (const id of MENU_PROP_IDS) {
     const prop = buildMenuProp(id);
-    assert.ok(prop.group.children.length > 5, id);
+    let meshes = 0;
+    prop.group.traverse(o => o.isMesh && meshes++);
+    assert.ok(meshes > 5, `${id}: ${meshes} malhas`);
     for (const key of ['x', 'y', 'z'])
       assert.ok(Number.isFinite(prop.seat[key]), `${id}.seat.${key}`);
     assert.ok(prop.seat.y > 0.5 && prop.seat.y < 1.5, `${id}: altura do assento plausível`);
