@@ -65,7 +65,6 @@ function cipo({b, pivot, motion}) {
     b(c, 0, -0.14, 0, 0.26, 0.28, 0.04, 0, flag);
     motion.push(t => (flag.rotation.z = Math.sin(t * 2.4 + i * 0.7) * 0.25));
   });
-  b(0x4c5d65, 0, 0.03, 0.1, 5.4, 0.06, 1.5);
   return {seat: {x: 0, y: 0.89, z: -0.1}, width: 5.4, height: 3.7};
 }
 
@@ -96,7 +95,6 @@ function rio({b, pivot, motion}) {
   }
   motion.push(t => (crown.rotation.z = Math.sin(t * 0.8) * 0.04));
   b(0xe8b35a, 1.75, 0.55, 0.45, 0.28, 1.4, 0.06, -0.25);
-  b(0x4c5d65, 0, 0.02, 0.15, 6.0, 0.04, 1.6);
   return {seat: {x: 0, y: 0.9, z: 0}, width: 6.0, height: 3.8};
 }
 
@@ -120,7 +118,6 @@ function brasilia({b, pivot, motion, group}) {
   b(0x009c3b, 0.3, 0, 0, 0.6, 0.4, 0.04, 0, flag);
   b(0xffdf00, 0.3, 0, 0.03, 0.34, 0.22, 0.04, Math.PI / 4, flag);
   motion.push(t => (flag.rotation.y = Math.sin(t * 2.6) * 0.35));
-  b(0xcfc6aa, -0.5, 0.03, 0.1, 6.3, 0.06, 1.6);
   return {seat: {x: 1.05, y: 0.9, z: 0}, width: 6.3, height: 3.6};
 }
 
@@ -162,7 +159,6 @@ function amazonia({b, pivot, motion, group}) {
     frond.rotation.z = -0.5 - i * 0.28;
     b(0x2f8f4e, 0, 0.5, 0, 0.12, 1.0, 0.1, 0, frond);
   }
-  b(0x46703a, 0, 0.02, 0.1, 5.2, 0.05, 1.4);
   return {seat: {x: 0.2, y: 0.95, z: 0}, width: 5.2, height: 3.6};
 }
 

@@ -55,11 +55,14 @@ A raiz do repositório contém apenas o **build publicado** (`index.html`, `asse
 
 ## Interface ("Bloco Voxel")
 
-A tela inicial é a própria cena 3D: o porco senta num objeto do mapa (`menu-scene.js`) e a UI é uma
-moldura fina em volta (barra do topo, trilhos laterais, barra de nome e BORA VOAR). Porcos, Mapas e
-Ajustes abrem como diálogos; comprar skin ou mapa acontece dentro deles. Ao jogar, `Game` entra em
-`TAKEOFF` (~0,6 s): o menu sai em degraus, o porco salta do assento, o HUD entra e a partida começa
-quando o salto termina e o bilhete do servidor chega.
+A tela inicial é a própria cena 3D: a câmera faz um close no porco sentado num objeto do mapa
+(`menu-scene.js`), de pé na estrada de verdade, e a UI é uma moldura fina em volta (barra do topo,
+trilhos laterais, barra de nome e BORA VOAR). Porcos, Mapas e Ajustes abrem como diálogos; comprar
+skin ou mapa acontece dentro deles. Ao jogar, `Game` entra em `TAKEOFF` (~0,9 s): o menu sai em
+degraus, o porco salta do assento e a câmera dá um zoom out até o enquadramento do jogo (`viewPose`
+em `takeoff.js`, aplicado por `Stage.setView`), como se a partida começasse dentro do cenário. O
+objeto fica para trás e rola para fora com a camada próxima. A partida começa quando o zoom termina
+e o bilhete do servidor chega.
 
 Regras de estilo:
 
@@ -113,6 +116,12 @@ O servidor atual é adequado para a beta (um único Durable Object). Antes de cr
 
 Ao particionar, mantenha `ALLOWED_ORIGINS` e os nomes de objeto em constantes únicas e adicione uma
 migração de Durable Object (`wrangler.jsonc`) em vez de renomear `GameServer`.
+
+## Compatibilidade cliente × servidor
+
+`SPAWN_X` (em `core/engine.js`) define a que distância do porco canos e moedas nascem. Ele é parte da
+simulação que o servidor reproduz: **mudar esse valor exige publicar o Worker junto com o cliente**,
+e um cliente antigo em cache terá partidas de conta e duelos rejeitados até recarregar a página.
 
 ## Testes e CI
 

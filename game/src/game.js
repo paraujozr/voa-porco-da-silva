@@ -12,11 +12,13 @@ import {showModal} from './modal.js';
 import {DuelController} from './duel.js';
 import {buildMenuProp} from './menu-scene.js';
 import {icon} from './icons.js';
-import {takeoffPose, easeInOut, TAKEOFF_SECONDS} from './takeoff.js';
+import {takeoffPose, viewPose, DEFAULT_VIEW, TAKEOFF_SECONDS} from './takeoff.js';
 
 // The menu set piece stands on the road in front of the camera.
 const MENU_Z = 4;
 const ROAD_Y = -4.8;
+// The pig is the same size in the menu and in flight: only the camera moves.
+const PIG_SCALE = 0.68;
 
 // Values double as <body> class names (see the CSS), so keep them stable.
 export const STATE = {
@@ -83,7 +85,10 @@ export class Game {
   // ---- state & menu ----
   setState(next) {
     this.state = next;
-    if (this.prop) this.prop.group.visible = [STATE.MENU, STATE.TAKEOFF].includes(next);
+    const inMenuScene = [STATE.MENU, STATE.TAKEOFF].includes(next);
+    // The prop stays up when a run starts so it can scroll away with the scenery (tickScene).
+    if (this.prop && next !== STATE.PLAYING) this.prop.group.visible = inMenuScene;
+    if (!inMenuScene) this.stage.setView(DEFAULT_VIEW);
     document.body.className = next;
     // The menu stays up during the takeoff so its parts can slide out (see menu.css).
     $('menu').hidden = ![STATE.MENU, STATE.TAKEOFF].includes(next);
@@ -242,7 +247,7 @@ export class Game {
   }
 
   beginTakeoff(ticketPromise) {
-    const {pig, prop} = this;
+    const {pig, stage} = this;
     const takeoff = {
       t: 0,
       ticket: null,
@@ -254,7 +259,7 @@ export class Game {
         scale: pig.scale.x,
         yaw: pig.rotation.y,
       },
-      propX: prop.group.position.x,
+      view: {...stage.view},
       seconds: matchMedia('(prefers-reduced-motion: reduce)').matches ? 0.2 : TAKEOFF_SECONDS,
     };
     this.takeoff = takeoff;
@@ -267,6 +272,8 @@ export class Game {
     this.audio.play('flap');
   }
 
+  // The camera zooms out from the close-up on the bench to the gameplay framing while the pig
+  // hops off its seat and flies to its flight position: as if the run starts inside the scene.
   tickTakeoff(dt) {
     const k = this.takeoff;
     if (!k) return;
@@ -280,16 +287,15 @@ export class Game {
     const progress = Math.min(1, k.t / k.seconds);
     const pose = takeoffPose(
       k.from,
-      {x: this.stage.playerX, y: 1, z: 0, scale: 0.68, yaw: 0.2},
+      {x: this.stage.playerX, y: 1, z: 0, scale: PIG_SCALE, yaw: 0.2},
       progress,
       2,
     );
     this.pig.position.set(pose.x, pose.y, pose.z);
     this.pig.scale.setScalar(pose.scale);
     this.pig.rotation.set(0.02 * (1 - progress), pose.yaw, 0);
+    this.stage.setView(viewPose(k.view, DEFAULT_VIEW, progress));
     this.flapPulse = 1; // wings beat hard while hopping off
-    // The set piece rolls away to the left, as if the pig were flying past it.
-    this.prop.group.position.x = k.propX - easeInOut(progress) ** 2 * this.stage.halfWidth * 2.4;
     if (progress >= 1 && k.ticket) {
       this.takeoff = null;
       this.prepare(k.ticket);
@@ -550,6 +556,10 @@ export class Game {
       this.state === STATE.PLAYING,
       run ? LEVELS[run.level].speed + Math.min(run.passed * 0.04, LEVELS[run.level].boost) : 0,
     );
+    this.driftProp(
+      dt,
+      run ? LEVELS[run.level].speed + Math.min(run.passed * 0.04, LEVELS[run.level].boost) : 0,
+    );
     this.flapPulse = Math.max(0, this.flapPulse - dt * 4);
     animatePig(this.pig, {
       time: this.time,
@@ -581,39 +591,52 @@ export class Game {
     this.entities.update(dt);
   }
 
-  // World y of a screen row, on the plane the menu scene stands on.
-  worldYAtPx(px, z = MENU_Z) {
-    const {camera} = this.stage;
-    const near = new T.Vector3(0, 1 - (2 * px) / innerHeight, -1).unproject(camera);
-    const dir = camera.getWorldDirection(new T.Vector3());
-    return near.y + dir.y * ((z - near.z) / dir.z);
+  // After takeoff the menu prop is part of the scenery: it scrolls off to the left like the near
+  // layer does, then disappears.
+  driftProp(dt, speed) {
+    const {prop, stage} = this;
+    if (this.state !== STATE.PLAYING || !prop.group.visible) return;
+    prop.group.position.x -= speed * 0.85 * dt;
+    if (prop.group.position.x < -(stage.halfWidth + prop.width * PIG_SCALE))
+      prop.group.visible = false;
   }
 
-  // Seats the pig on the map's prop and fits the pair between the top bar and the name bar.
+  // Menu camera: a close-up of the pig and its prop standing on the real road, framed between the
+  // top bar and the name bar. Zoom is as tight as the free area allows.
+  menuView() {
+    const {stage, prop} = this;
+    const unit = innerHeight / 20;
+    const top = $('top').getBoundingClientRect().bottom + 8;
+    const bottom = document.querySelector('.menu-bottom').getBoundingClientRect().top - 14;
+    const propH = prop.height * PIG_SCALE,
+      propW = prop.width * PIG_SCALE;
+    const widthShare = innerWidth <= 680 ? 0.95 : 0.7;
+    const fit = Math.min(
+      (bottom - top) / (propH * unit * 1.05),
+      (stage.halfWidth * 2 * widthShare) / propW,
+    );
+    const view = {zoom: Math.min(3.4, Math.max(1.2, fit)), x: 0, y: DEFAULT_VIEW.y};
+    // Slide the camera until the road meets the bottom of the free area.
+    for (let i = 0; i < 3; i++) {
+      stage.setView(view);
+      view.y -= (stage.screenY(0, ROAD_Y, MENU_Z) - bottom) / (unit * view.zoom * 0.99);
+    }
+    return view;
+  }
+
+  // Seats the pig on the map's prop and frames them.
   tickMenuPig() {
     const {pig, prop, time, stage} = this;
-    const {halfWidth, camera} = stage;
-    const compact = innerWidth <= 680,
-      unit = innerHeight / 20,
-      freeTop = $('top').getBoundingClientRect().bottom + 8,
-      bottomTop = document.querySelector('.menu-bottom').getBoundingClientRect().top - 24;
-    // Stand on the road; if the name bar covers the road, stand on a pedestal just above it.
-    const roadPx = ((1 - new T.Vector3(0, ROAD_Y, MENU_Z).project(camera).y) / 2) * innerHeight;
-    const groundPx = Math.min(roadPx, bottomTop);
-    const groundY = groundPx === roadPx ? ROAD_Y : this.worldYAtPx(groundPx);
-    const region = Math.max(0, groundPx - freeTop);
-    pig.visible = prop.group.visible && region > 55;
-    const fitHeight = region / unit / prop.height;
-    const fitWidth = (halfWidth * 2 * (compact ? 0.95 : 0.4)) / prop.width;
-    const scale = Math.max(0.4, Math.min(fitHeight, fitWidth, 2.6));
-    prop.group.scale.setScalar(scale);
-    prop.group.position.set(0, groundY, MENU_Z);
-    pig.scale.setScalar(scale);
+    stage.setView(this.menuView());
+    prop.group.scale.setScalar(PIG_SCALE);
+    prop.group.position.set(0, ROAD_Y, MENU_Z);
+    pig.visible = prop.group.visible;
+    pig.scale.setScalar(PIG_SCALE);
     // The pig's bottom sits about 1.03 below its origin.
     pig.position.set(
-      prop.seat.x * scale,
-      groundY + (prop.seat.y + 1.03) * scale,
-      MENU_Z + prop.seat.z * scale,
+      prop.seat.x * PIG_SCALE,
+      ROAD_Y + (prop.seat.y + 1.03) * PIG_SCALE,
+      MENU_Z + prop.seat.z * PIG_SCALE,
     );
     pig.rotation.set(0.02, 0.24 + Math.sin(time * 0.6) * 0.08, 0.03);
   }

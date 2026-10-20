@@ -1,3 +1,6 @@
+// Gates and coins appear this far (world units) ahead of the pig. Wider than any supported
+// screen (21:9 shows ~33 units to the right of the pig), so they never pop in on screen.
+export const SPAWN_X = 34;
 export const DT = 1 / 120,
   MAX_TICKS = 120 * 600,
   DUEL_TICKS = 120 * 180,
@@ -29,7 +32,7 @@ export function createRun(seed = 1, level = 'normal', duel = false) {
     passed: 0,
     gates: [],
     tokens: [],
-    remaining: 6,
+    remaining: 0, // the first gate spawns right away; it still needs seconds to arrive
     lastCenter: 1,
     lastSpace: 0,
     serial: 0,
@@ -53,8 +56,9 @@ function gate(run) {
   run.lastSpace = space;
   run.remaining += space;
   const id = ++run.serial;
-  run.gates.push({id, x: 22, center, gap, passed: false});
-  for (let i = 0; i < 3; i++) run.tokens.push({id: `${id}-${i}`, x: 24.4 + i * 0.85, y: center});
+  run.gates.push({id, x: SPAWN_X, center, gap, passed: false});
+  for (let i = 0; i < 3; i++)
+    run.tokens.push({id: `${id}-${i}`, x: SPAWN_X + 2.4 + i * 0.85, y: center});
 }
 export function collide(y, g) {
   const cx = 0.1,

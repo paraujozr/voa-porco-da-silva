@@ -32,3 +32,20 @@ test('progresso fora de 0..1 é limitado e a duração é curta', () => {
   assert.deepEqual(takeoffPose(from, to, 5), takeoffPose(from, to, 1));
   assert.ok(TAKEOFF_SECONDS > 0.3 && TAKEOFF_SECONDS < 1);
 });
+
+test('o zoom-out vai do close-up do menu ao enquadramento do jogo, sem passar do alvo', async () => {
+  const {viewPose, DEFAULT_VIEW} = await import('../src/takeoff.js');
+  const menu = {zoom: 3, x: 0, y: -3.2};
+  const start = viewPose(menu, DEFAULT_VIEW, 0);
+  assert.ok(Math.abs(start.zoom - menu.zoom) < 1e-9 && start.y === menu.y);
+  const end = viewPose(menu, DEFAULT_VIEW, 1);
+  assert.ok(Math.abs(end.zoom - 1) < 1e-9 && Math.abs(end.y - DEFAULT_VIEW.y) < 1e-9);
+  let previous = Infinity;
+  for (let i = 0; i <= 40; i++) {
+    const v = viewPose(menu, DEFAULT_VIEW, i / 40);
+    assert.ok(v.zoom <= previous + 1e-9 && v.zoom >= 1 - 1e-9, 'zoom só diminui até 1');
+    previous = v.zoom;
+  }
+  // Log-space easing: halfway through the (eased) time the zoom is the geometric mean.
+  assert.ok(Math.abs(viewPose(menu, DEFAULT_VIEW, 0.5).zoom - Math.sqrt(3)) < 1e-9);
+});

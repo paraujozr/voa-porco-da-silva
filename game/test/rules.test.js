@@ -46,3 +46,15 @@ test('catálogo do servidor e config do cliente concordam em ids e preços', () 
     'quatro skins iniciais gratuitas',
   );
 });
+
+test('canos e moedas nascem fora da tela, mesmo em telas ultralargas', async () => {
+  const {SPAWN_X} = await import('../core/engine.js');
+  // Pig sits at -0.42 * halfWidth; the visible area is 10 units tall, so a 21:9 screen has
+  // halfWidth = 23.3 and shows 23.3 + 9.8 units ahead of the pig.
+  const visibleAhead21by9 = 23.4 + 0.42 * 23.4;
+  assert.ok(SPAWN_X > visibleAhead21by9, `SPAWN_X=${SPAWN_X}`);
+  const run = createRun(11, 'normal');
+  advance(run);
+  assert.equal(run.gates[0].x < SPAWN_X && run.gates[0].x > SPAWN_X - 0.2, true);
+  assert.ok(run.tokens.every(t => t.x > SPAWN_X));
+});

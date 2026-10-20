@@ -1,6 +1,6 @@
 import * as T from 'three';
 import {Voxels, mat, box, mesh, label} from './pig.js';
-import {detailedTree, detailedHouse, enrichWorld} from './scenery.js';
+import {detailedTree, detailedHouse, enrichWorld, flowerBeds} from './scenery.js';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {MEMES} from './config.js';
 const rnd = n => {
@@ -264,6 +264,7 @@ export function buildWorld(scene, map) {
   for (let k = 0; k < 2; k++) {
     const mid = root(group, k * 70, 0, 0);
     skyline(mid, map.id);
+    flowerBeds(mid, map);
     layers.push({g: mid, start: k * 70, speed: 0.43});
     const near = root(group, k * 70, 0, 0);
     for (let i = 0; i < 14; i++) {

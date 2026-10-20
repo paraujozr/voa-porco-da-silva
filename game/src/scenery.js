@@ -183,25 +183,6 @@ export function enrichWorld(group, map, movers) {
     b(church, 0xf3d57b, 0, 3, 1.54, 0.55, 0.65, 0.08);
     b(church, 0x584d42, 2, 5.2, 0.87, 0.56, 0.75, 0.08);
   }
-  // Scattered foreground flower beds and reeds give the ground scale and color.
-  for (let i = 0; i < 35; i++) {
-    const x = -45 + i * 2.8,
-      z = i % 2 ? -3 : -18;
-    const g = root(x, -4.7, z);
-    for (let j = 0; j < 3; j++) {
-      b(g, 0x447547, j * 0.18, 0.16 + j * 0.06, 0, 0.065, 0.38, 0.065);
-      b(
-        g,
-        map.id === 'amazonia' ? 0xe78175 : [0xf2ca67, 0xe77686, 0xab8bc6][i % 3],
-        j * 0.18,
-        0.4 + j * 0.06,
-        0,
-        0.18,
-        0.14,
-        0.15,
-      );
-    }
-  }
   // Low ripples slide independently of the land and shimmer with the sunlight.
   for (let i = 0; i < 22; i++) {
     const wave = b(
@@ -217,4 +198,25 @@ export function enrichWorld(group, map, movers) {
     movers.push({type: 'ripple', g: wave, base: wave.position.clone(), seed: i});
   }
   return skyMat;
+}
+
+// Flower beds scattered along the ground give it scale and colour. They belong to a scrolling
+// parallax layer (see buildWorld): placed straight in the scene they would stay still while the
+// houses slide past them. One layer spans 70 units, so 25 beds tile seamlessly.
+export function flowerBeds(parent, map) {
+  const cache = new Map();
+  const m = c => {
+    if (!cache.has(c)) cache.set(c, mat(c));
+    return cache.get(c);
+  };
+  for (let i = 0; i < 25; i++) {
+    const g = new T.Group();
+    g.position.set(-35 + i * 2.8, -4.7, i % 2 ? -3 : -18);
+    parent.add(g);
+    const bloom = map.id === 'amazonia' ? 0xe78175 : [0xf2ca67, 0xe77686, 0xab8bc6][i % 3];
+    for (let j = 0; j < 3; j++) {
+      box(g, m(0x447547), j * 0.18, 0.16 + j * 0.06, 0, 0.065, 0.38, 0.065);
+      box(g, m(bloom), j * 0.18, 0.4 + j * 0.06, 0, 0.18, 0.14, 0.15);
+    }
+  }
 }

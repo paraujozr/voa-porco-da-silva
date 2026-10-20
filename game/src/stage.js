@@ -39,17 +39,36 @@ export class Stage {
     this.scene.add(sun);
     this.halfWidth = 16;
     this.playerX = -7;
+    // Camera framing. zoom 1 is the gameplay view (20 world units tall); the menu zooms in.
+    this.view = {zoom: 1, x: 0, y: 1};
   }
 
   resize() {
     const {camera} = this;
     this.halfWidth = (10 * innerWidth) / innerHeight;
     Object.assign(camera, {left: -this.halfWidth, right: this.halfWidth, top: 10, bottom: -10});
-    camera.updateProjectionMatrix();
-    camera.position.set(0, 5.5, 32);
-    camera.lookAt(0, 1, 0);
     this.renderer.setSize(innerWidth, innerHeight);
     this.playerX = -this.halfWidth * (innerWidth <= 680 ? 0.48 : 0.42);
+    this.applyView();
+  }
+
+  setView(view) {
+    Object.assign(this.view, view);
+    this.applyView();
+  }
+
+  applyView() {
+    const {camera, view} = this;
+    camera.zoom = view.zoom;
+    camera.position.set(view.x, view.y + 4.5, 32);
+    camera.lookAt(view.x, view.y, 0);
+    camera.updateProjectionMatrix();
+    camera.updateMatrixWorld();
+  }
+
+  // Screen row (pixels from the top) of a world point, for the current view.
+  screenY(x, y, z) {
+    return ((1 - new T.Vector3(x, y, z).project(this.camera).y) / 2) * innerHeight;
   }
 
   setQuality(low) {
