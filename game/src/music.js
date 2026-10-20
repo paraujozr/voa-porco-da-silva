@@ -134,13 +134,3 @@ export class MusicPlayer {
     this.track.pause();
   }
 }
-export function decorateFestival() {
-  const el = document.querySelector('.bunting');
-  el.innerHTML =
-    '<div class="fest-wire"></div>' +
-    Array.from(
-      {length: 24},
-      (_, i) =>
-        `<span class="fest-flag" style="--i:${i};--color:${['#ffdf00', '#009c3b', '#ef7453', '#47aecb'][i % 4]};left:${i * 4.3}%"></span><i class="fest-bulb" style="--i:${i};left:${i * 4.3 + 2.4}%;--color:${['#ffe577', '#ff876a', '#80ffd4', '#a7cfff'][i % 4]}"></i>`,
-    ).join('');
-}

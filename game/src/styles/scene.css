@@ -163,6 +163,19 @@ button {
     width: 44px;
     height: 44px;
   }
+  .bunting {
+    height: 30px;
+  }
+  .fest-flag {
+    top: 4px;
+    width: 18px;
+    height: 22px;
+  }
+  .fest-bulb {
+    top: 6px;
+    width: 6px;
+    height: 9px;
+  }
   #toast {
     top: 92px;
     font-size: 19px;
