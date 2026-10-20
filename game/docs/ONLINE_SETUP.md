@@ -30,3 +30,6 @@ WebSockets usam hibernação. Limites por IP/conta protegem autenticação; sess
 
 ## Firebase anterior
 O projeto Firebase gratuito foi criado, mas não é utilizado nesta versão. O adaptador em server/index.js ficou apenas para regressão histórica local. Não ativar Blaze nem publicar Functions.
+
+## Duração das partidas
+Solo: até 60 minutos, com aviso no último minuto e resultado salvo ao concluir. Duelo: 3 minutos. O orçamento de replay é limitado no servidor. O limite solo antigo de 10 minutos encerrava o modo normal perto de 300 canos; foi corrigido em 19/10/2026.

@@ -1,4 +1,6 @@
-export const DT=1/120,MAX_TICKS=120*600,DUEL_TICKS=120*180,CONTINUE_LIMIT=3;
+// Keep a bounded replay budget on the server, without ending normal flights near 300 pipes.
+export const SOLO_SECONDS=60*60;
+export const DT=1/120,MAX_TICKS=120*SOLO_SECONDS,DUEL_TICKS=120*180,CONTINUE_LIMIT=3;
 export const LEVELS={easy:{speed:4.5,boost:.9,gap:[5.8,6.7],space:[12,18],rise:1.4},normal:{speed:5.5,boost:1.3,gap:[4.8,5.8],space:[10,16.5],rise:2.1},hard:{speed:6.5,boost:1.5,gap:[4.1,5.1],space:[8.8,14.5],rise:2.5}};
 export const continuePrice=n=>25*2**n;
 export function rng(seed){let n=seed>>>0;return ()=>{n=(Math.imul(n,1664525)+1013904223)>>>0;return n/4294967296;};}
