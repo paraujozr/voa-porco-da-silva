@@ -1,8 +1,7 @@
 import * as T from 'three';
 import {Voxels, mat, box, mesh, label} from './pig.js';
-import {detailedTree, detailedHouse, enrichWorld, flowerBeds} from './scenery.js';
+import {detailedTree, detailedHouse, enrichWorld, flowerBeds, groundPatches} from './scenery.js';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
-import {MEMES} from './config.js';
 const rnd = n => {
   const x = Math.sin(n * 127.1 + 311.7) * 43758.5453;
   return x - Math.floor(x);
@@ -169,7 +168,6 @@ export function buildWorld(scene, map) {
             b(p, 0x497e91, x - 0.65 + k * 1.25, -4.2 + j * 0.75, -11.96, 0.4, 0.4, 0.06);
       }
       for (let i = 0; i < 8; i++) tree(p, -30 + i * 8, -7, 3, 'palm');
-      for (let i = 0; i < 7; i++) b(p, 0x8dc9c6, -30 + i * 10, -4.6, -2, 4, 0.07, 0.1);
     }
     if (id === 'cipo') {
       for (let i = 0; i < 12; i++) {
@@ -209,10 +207,23 @@ export function buildWorld(scene, map) {
       sign(p, 'CALMA, CAPIVARA!', -15, -1.8, -7, 4);
     }
   }
-  // Ground sits below the playable corridor. The road and water scroll as separate layers.
+  // Solid ground from the far hills to past the camera, so houses never look afloat. The water
+  // plane below only shows beyond its far edge (the sea or river on the horizon) and, in
+  // Amazônia, as a narrow river strip in front of the forest.
   b(group, map.water, 0, -5.3, -18, 200, 0.5, 110);
-  b(group, map.ground, 0, -5.05, -24, 200, 0.5, 25);
-  b(group, map.id === 'cipo' ? 0x4c5d65 : map.ground, 0, -5.05, 5, 200, 0.5, 7);
+  b(group, map.ground, 0, -5.08, -3.25, 200, 0.5, 66.5);
+  if (map.id === 'amazonia') b(group, map.water, 0, -4.86, -5.5, 200, 0.1, 5.5);
+  if (map.id === 'cipo' || map.id === 'brasilia') {
+    // Pavement along the road with a darker kerb.
+    b(group, map.id === 'cipo' ? 0xd9d2bd : 0xe3dcc6, 0, -4.83, -0.5, 200, 0.08, 4);
+    b(group, 0xb8b199, 0, -4.79, 1.45, 200, 0.09, 0.12);
+    // ...and a second pavement below the road, at the bottom of the screen.
+    b(group, map.id === 'cipo' ? 0xd9d2bd : 0xe3dcc6, 0, -4.83, 11, 200, 0.08, 5);
+    b(group, 0xb8b199, 0, -4.79, 8.55, 200, 0.09, 0.12);
+  }
+  // The road (or promenade / dirt track) in front of the scenery.
+  const roadColor = {cipo: 0x4c5d65, rio: 0xe6dcc3, brasilia: 0x939a9e, amazonia: 0x7a6444};
+  b(group, roadColor[map.id], 0, -5.05, 5, 200, 0.5, 7);
   const far = root(group, 0, 0, -48);
   for (let layer = 0; layer < 3; layer++) {
     const v = new Voxels(0.55);
@@ -265,16 +276,18 @@ export function buildWorld(scene, map) {
     const mid = root(group, k * 70, 0, 0);
     skyline(mid, map.id);
     flowerBeds(mid, map);
+    groundPatches(mid, map);
     layers.push({g: mid, start: k * 70, speed: 0.43});
     const near = root(group, k * 70, 0, 0);
     for (let i = 0; i < 14; i++) {
       const xx = -34 + i * 5;
       if (map.id === 'cipo') {
         b(near, 0xeee5bf, xx, -4.77, 4.5, 2, 0.05, 0.16);
-        if (i % 4 === 0) sign(near, MEMES[(i + k * 7) % MEMES.length], xx, -2.7, 7, 2.8);
       } else if (map.id === 'rio') {
         for (let j = 0; j < 4; j++)
           b(near, j % 2 ? 0x314f58 : 0xece8d4, xx + j * 0.4, -4.77, 4.5 + j * 0.3, 0.55, 0.08, 0.6);
+      } else if (map.id === 'brasilia') {
+        b(near, 0xf1efe0, xx, -4.77, 4.5, 2, 0.05, 0.16);
       } else b(near, map.id === 'amazonia' ? 0x397b52 : 0x668a5d, xx, -4.7, 6, 0.6, 0.3, 0.6);
     }
     layers.push({g: near, start: k * 70, speed: 0.85});

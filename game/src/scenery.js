@@ -183,14 +183,15 @@ export function enrichWorld(group, map, movers) {
     b(church, 0xf3d57b, 0, 3, 1.54, 0.55, 0.65, 0.08);
     b(church, 0x584d42, 2, 5.2, 0.87, 0.56, 0.75, 0.08);
   }
-  // Low ripples slide independently of the land and shimmer with the sunlight.
-  for (let i = 0; i < 22; i++) {
+  // Low ripples slide independently of the land and shimmer with the sunlight. Only the Amazon
+  // has water in the middle ground now (see buildWorld).
+  for (let i = 0; i < (map.id === 'amazonia' ? 22 : 0); i++) {
     const wave = b(
       group,
       i % 2 ? 0x93dbd2 : 0xc4e9d4,
       -40 + i * 4,
-      -4.68,
-      -1 - (i % 3) * 0.7,
+      -4.78,
+      -4 - (i % 3) * 1.2,
       1 + (i % 4) * 0.7,
       0.025,
       0.07,
@@ -218,5 +219,30 @@ export function flowerBeds(parent, map) {
       box(g, m(0x447547), j * 0.18, 0.16 + j * 0.06, 0, 0.065, 0.38, 0.065);
       box(g, m(bloom), j * 0.18, 0.4 + j * 0.06, 0, 0.18, 0.14, 0.15);
     }
+  }
+}
+
+// Patches of lighter and darker ground break up the flat colour. Like the flower beds they sit in
+// a scrolling layer (70 units wide).
+export function groundPatches(parent, map) {
+  const base = new T.Color(map.ground);
+  const hash = n => {
+    const x = Math.sin(n * 91.7 + 17.3) * 43758.5453;
+    return x - Math.floor(x);
+  };
+  const shades = [0.9, 0.95, 1.06, 1.1].map(f => mat(base.clone().multiplyScalar(f)));
+  for (let i = 0; i < 44; i++) {
+    const w = 1.2 + hash(i) * 2.6,
+      d = 0.5 + hash(i + 50) * 1.3;
+    box(
+      parent,
+      shades[i % shades.length],
+      -35 + hash(i + 100) * 70,
+      -4.82,
+      -11 + hash(i + 150) * 10,
+      w,
+      0.02,
+      d,
+    );
   }
 }
