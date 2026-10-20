@@ -13,10 +13,10 @@ Jogo: https://paraujozr.github.io/voa-porco-da-silva/
 - Progresso de convidado não é importado para contas: dados locais podem ser modificados pelo navegador.
 
 ## Desenvolvimento
-Em game/online: npm ci e npm run dev (porta 8787).
+Em game/online: npm ci e npm run dev (porta 8787). O script libera, além do site publicado, as origens locais 127.0.0.1/localhost nas portas 5173 e 5174; em produção só o GitHub Pages é aceito (wrangler.jsonc).
 Em game/.env.local: VITE_ONLINE_URL=http://127.0.0.1:8787
-Em game/: npm ci e npm run dev -- --port 5174.
-Teste real do servidor: node online/check.mjs (servidor local ligado).
+Em game/: npm ci e npm run dev (porta 5173).
+Teste real do servidor: npm test em game/online (servidor local ligado; executa check.mjs). O limite de autenticação é por IP; em dev o check usa um IP falso por execução, mas o navegador compartilha o IP "local" (20 contas/convidados por 15 min).
 Teste de produção opcional: ONLINE_TEST_URL apontando para o servidor publicado; cria contas QA sem informação pessoal.
 Publicar servidor: npm run deploy em game/online após wrangler login. O Wrangler usa a conta do proprietário; nenhuma credencial administrativa é incluída no jogo.
 O build usa game/.env.production. Não publique um build apontando para localhost.
@@ -29,7 +29,7 @@ https://developers.cloudflare.com/workers/platform/pricing/
 WebSockets usam hibernação. Limites por IP/conta protegem autenticação; sessões, salas e partidas antigas expiram. O tráfego usa HTTPS e origens autorizadas. O placar é por canos, não metros. Isto não impede bots que executem voos válidos.
 
 ## Firebase anterior
-O projeto Firebase gratuito foi criado, mas não é utilizado nesta versão. O adaptador em server/index.js ficou apenas para regressão histórica local. Não ativar Blaze nem publicar Functions.
+A Beta 1.2 não usa Firebase. O adaptador de Cloud Functions, as regras do Firestore e a configuração do emulador foram removidos; estão no histórico do git (commit 91d9d84 e anteriores). O projeto Firebase criado permanece no plano gratuito, sem Functions publicadas; não ative o plano Blaze por causa deste projeto.
 
 ## Duração das partidas
 Solo: até 60 minutos, com aviso no último minuto e resultado salvo ao concluir. Duelo: 3 minutos. O orçamento de replay é limitado no servidor. O limite solo antigo de 10 minutos encerrava o modo normal perto de 300 canos; foi corrigido em 19/10/2026.

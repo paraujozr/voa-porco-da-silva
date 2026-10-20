@@ -1,31 +1,36 @@
-# Voa Porco da Silva — Beta 1.1
+# Voa Porco da Silva — projeto editável
 
-Prévia local jogável em Three.js + Vite, atualizada em 19/10/2026.
+Jogo em Three.js + Vite (Beta 1.2). Arquitetura, decisões e plano de escala em
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md); servidor online em
+[docs/ONLINE_SETUP.md](docs/ONLINE_SETUP.md); histórico da versão em [BETA-1.2.md](BETA-1.2.md).
 
-## Jogar
+## Comandos
 
-Execute `npm install` e `npm run dev -- --port 5173` nesta pasta. Abra http://127.0.0.1:5173/. Espaço, seta para cima ou toque na tela fazem o porco voar. Esc/P pausam. A opção 3D LEVE reduz a resolução e desliga sombras.
+Exigem Node 22+. Rode em `game/`:
 
-## Esta atualização
+```bash
+npm ci               # instala dependências
+npm run dev          # servidor de desenvolvimento (http://127.0.0.1:5173)
+npm test             # testes unitários
+npm run lint         # ESLint
+npm run format       # Prettier (format:check só confere)
+npm run build        # gera game/dist
+npm run publish:root # build + copia para a raiz do repositório (GitHub Pages)
+npm run sprites      # regenera src/styles/sprites.css (só se mudar scripts/build-sprites.mjs)
+```
 
-- Modelos 3D de voxels com 21 personagens e acessórios próprios, incluindo Mandrake, CLT, Maker Lab FIAP e homenagens de cultura pop.
-- Cipó Guaçu como mapa inicial: interpretação criativa com feira, ônibus, futebol, caramelo, churrasco e festa junina.
-- Rio, Brasília e Amazônia desbloqueáveis com moedas; é possível visualizar os destinos antes de comprar.
-- Cenário com camadas que se deslocam durante o voo, nuvens, aves, pipas, fumaça, pessoas, animais e luzes animadas.
-- Bandeirinhas ao vento e pisca-pisca na interface e decoração 3D de Cipó.
-- Logo oficial fornecida pelo autor, preservada no arquivo original.
-- Progresso anterior preservado; compras cobram uma única vez.
+Para jogar online localmente: em `game/online` rode `npm ci` e `npm run dev`, crie
+`game/.env.local` com `VITE_ONLINE_URL=http://127.0.0.1:8787` e abra o jogo em `localhost:5173` ou
+`localhost:5174`. Sem essa variável o jogo funciona offline (modo convidado).
 
-## Dificuldade
+## Controles
 
-De boa, Na raça e Sem dó alteram velocidade, abertura e espaçamento dos obstáculos. As sequências variam distância e altura, com limites de transição. Recordes são separados por mapa e dificuldade; recordes antigos são preservados no nível normal.
+Espaço, seta para cima ou toque fazem o porco voar; Esc/P pausam. Em Ajustes (engrenagem), 3D LEVE reduz a resolução e
+desliga sombras.
 
-## Áudio
+## Jogo
 
-A trilha e o FAHH são arquivos MP3 locais em public/audio. A música inicia ao decolar, pausa junto com o jogo e é interrompida pelo efeito de derrota. Não há player ou iframe do YouTube. MÚSICA ON/OFF controla a trilha; SOM ON/OFF controla todo o áudio. As fontes estão registradas nos arquivos JSON dessa pasta.
-
-## Verificação
-
-`npm test` verifica física, colisões, persistência, migração de saves, compras e construção dos 21 modelos. `npm run build` gera a pasta dist. A prévia foi conferida em desktop e em 390 × 844, incluindo seleção de personagens/mapas, pausa, derrota, moedas e reprodução dos arquivos locais.
-
-Esta pasta é a prévia Beta 1.1; esta atualização ainda não foi publicada no GitHub Pages.
+- 21 personagens em voxel, 4 mapas (Cipó Guaçu inicial; Rio, Brasília e Amazônia desbloqueáveis).
+- Dificuldades De boa, Na raça e Sem dó alteram velocidade, abertura e espaçamento dos canos. Os
+  recordes são separados por mapa e dificuldade.
+- Trilha e efeitos são MP3 locais em `public/audio`, com fontes nos JSON da mesma pasta.

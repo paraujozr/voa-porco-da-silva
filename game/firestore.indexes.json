@@ -1,1 +1,0 @@
-{"indexes":[{"collectionGroup":"entries","queryScope":"COLLECTION","fields":[{"fieldPath":"distance","order":"DESCENDING"},{"fieldPath":"achievedAt","order":"ASCENDING"}]}],"fieldOverrides":[]}

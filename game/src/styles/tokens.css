@@ -1,0 +1,36 @@
+/* Design tokens for the voxel UI. Sprites (--sprite-*) live in sprites.css (generated). */
+:root {
+  /* One source pixel of every frame and icon. Everything is a multiple of it. */
+  --px: 3px;
+
+  --outline: #08171d;
+  --ink: #fff4d6;
+  --ink-dim: #b9d3d6;
+  --panel: #123443;
+  --yellow: #ffdf00;
+  --yellow-dim: #b89a00;
+  --green: #009c3b;
+  --green-lit: #55d98a;
+  --blue: #002776;
+  --red: #c93c2c;
+
+  --title-shadow:
+    var(--px) 0 0 var(--outline), calc(-1 * var(--px)) 0 0 var(--outline),
+    0 var(--px) 0 var(--outline), 0 calc(-1 * var(--px)) 0 var(--outline),
+    var(--px) var(--px) 0 var(--outline), calc(-1 * var(--px)) var(--px) 0 var(--outline),
+    0 calc(2 * var(--px)) 0 var(--outline);
+
+  --font-ui: 'Jersey 15', 'Courier New', ui-monospace, monospace;
+  --font-display: 'Jersey 20', 'Jersey 15', 'Courier New', ui-monospace, monospace;
+
+  font-family: var(--font-ui);
+  font-size: 18px;
+  color: var(--ink);
+  background: var(--panel);
+}
+
+@media (max-width: 680px) {
+  :root {
+    --px: 2px;
+  }
+}

@@ -1,0 +1,136 @@
+/*
+ * Shared skins. Frames are 9-slice sprites (sprites.css): one source pixel = one --px.
+ *   panel  - dialogs and cards (slice 3), set where they are used
+ *   inset  - sunken areas such as the name bar and detail boxes (slice 3)
+ *   field  - inputs, selects, small readouts (slice 2)
+ *   block  - 3D buttons (slice 2 top/sides, 3 bottom for the side face)
+ * Colour variants set --block / --block-down; pressing swaps the sprite and sinks the block.
+ */
+
+/* ---- field ---- */
+input,
+textarea,
+select,
+.wallet,
+.build {
+  border-style: solid;
+  border-color: transparent;
+  border-width: calc(2 * var(--px));
+  border-image: var(--sprite-field) 2 fill / calc(2 * var(--px)) / 0 stretch;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  color: var(--ink);
+  image-rendering: pixelated;
+}
+
+/* ---- block buttons ---- */
+.primary,
+.secondary,
+.icon-btn,
+.rail-btn,
+.pick-arrow,
+.close-btn,
+.map,
+.character {
+  --block: var(--sprite-btn-steel);
+  --block-down: var(--sprite-btn-steel-down);
+  border-style: solid;
+  border-color: transparent;
+  border-width: calc(2 * var(--px)) calc(2 * var(--px)) calc(3 * var(--px));
+  border-image-source: var(--block);
+  border-image-slice: 2 2 3 2 fill;
+  border-image-width: calc(2 * var(--px)) calc(2 * var(--px)) calc(3 * var(--px))
+    calc(2 * var(--px));
+  border-image-repeat: stretch;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  transform: none;
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-weight: 700;
+  image-rendering: pixelated;
+  backdrop-filter: none;
+}
+.primary,
+.map.selected,
+.character.selected {
+  --block: var(--sprite-btn-yellow);
+  --block-down: var(--sprite-btn-yellow-down);
+  color: var(--outline);
+}
+.secondary[aria-pressed='true'] {
+  --block: var(--sprite-btn-green);
+  --block-down: var(--sprite-btn-green-down);
+}
+
+button:active:not(:disabled) {
+  border-image-source: var(--block-down);
+  transform: translateY(var(--px));
+}
+button:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+button:disabled {
+  filter: grayscale(0.6) brightness(0.8);
+  cursor: not-allowed;
+}
+
+/* ---- button layout (skins above) ---- */
+.primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 16px 8px;
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: 0;
+}
+.secondary {
+  display: block;
+  width: 100%;
+  padding: 8px 12px 6px;
+  font-size: 20px;
+  line-height: 1.1;
+  letter-spacing: 0;
+}
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  font-size: 18px;
+  letter-spacing: 0;
+}
+
+/* ---- form controls ---- */
+input,
+textarea,
+select {
+  width: 100%;
+  padding: 4px 8px;
+  font-family: var(--font-ui);
+  font-size: 20px;
+  color: var(--ink);
+}
+input::placeholder,
+textarea::placeholder {
+  color: #6f96a3;
+}
+select {
+  appearance: none;
+  padding-right: 34px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='7' height='4' shape-rendering='crispEdges'%3E%3Cpath fill='%23ffdf00' d='M0 0h7v1H6v1H5v1H4v1H3V3H2V2H1V1H0z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 14px 8px;
+}
+select option {
+  background: #0b222c;
+  color: var(--ink);
+}
