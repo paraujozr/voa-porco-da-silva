@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {PIGS} from '../src/config.js';
 import {makePig, disposeGroup} from '../src/pig.js';
-test('todos os 21 modelos têm geometria válida e duas asas animáveis', () => {
+test('todos os modelos têm geometria válida e duas asas animáveis', () => {
   for (const data of PIGS) {
     const pig = makePig(data);
     assert.equal(pig.userData.wings.length, 2, data.id);

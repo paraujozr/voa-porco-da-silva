@@ -157,6 +157,7 @@ export function enrichWorld(group, map, movers) {
   }
   if (map.id === 'cipo') {
     const tower = root(10, -4.8, -23);
+    movers.push({type: 'landmark', g: tower, base: tower.position.clone()});
     for (const x of [-0.8, 0.8])
       for (const z of [-0.7, 0.7]) b(tower, 0xa68c68, x, 2.8, z, 0.16, 5.6, 0.16);
     for (let j = 0; j < 4; j++) {
@@ -174,6 +175,7 @@ export function enrichWorld(group, map, movers) {
       0.97,
     );
     const church = root(-12, -4.8, -23);
+    movers.push({type: 'landmark', g: church, base: church.position.clone()});
     b(church, 0xe7d4a4, 0, 2, 0, 4, 4, 3);
     b(church, 0xd4b986, 2, 3, 0, 1.4, 6, 1.7);
     b(church, 0xb15f3e, 2, 6.2, 0, 1.7, 0.3, 1.9);

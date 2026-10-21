@@ -1,6 +1,7 @@
+import {speedFor} from '../core/adventure.js';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {LEVELS, createRun, advance} from '../core/engine.js';
+import {LEVELS, createRun} from '../core/engine.js';
 import {DIFFICULTY_NAMES} from '../src/difficulty.js';
 import {autopilot} from './helpers.js';
 
@@ -18,12 +19,23 @@ test('cada nível tem nome e dificuldade crescente (velocidade, abertura, espaç
   }
 });
 
-test('velocidade cresce com os canos e tem teto por nível', () => {
+test('velocidade cresce com tempo, canos e moedas e tem teto por nível', () => {
   for (const [id, d] of Object.entries(LEVELS)) {
     const run = createRun(1, id);
-    assert.equal(advance(run).speed, d.speed);
+    assert.equal(speedFor(run), d.speed);
+    run.tick = 120 * 60;
+    const timed = speedFor(run);
+    assert.ok(timed > d.speed);
+    run.coins = 20;
+    const coins = speedFor(run);
+    assert.ok(coins > timed);
+    run.passed = 20;
+    assert.ok(speedFor(run) > coins);
     run.passed = 10000;
-    assert.equal(advance(run).speed, d.speed + d.boost);
+    const max = speedFor(run);
+    run.passed *= 2;
+    assert.equal(speedFor(run), max);
+    assert.ok(max <= d.speed * 2.35);
   }
 });
 

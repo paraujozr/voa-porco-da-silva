@@ -1,3 +1,5 @@
+import {activePower, effectiveGate, powerFor} from '../core/adventure.js';
+import {makeHazard, makeProjectile, makeMotorbike} from './adventure-models.js';
 import * as T from 'three';
 import {disposeGroup, mat, ball} from './pig.js';
 import {makeGate, makeCoin} from './world.js';
@@ -9,15 +11,27 @@ export class RunEntities {
     this.gates = new Map();
     this.tokens = new Map();
     this.particles = [];
+    this.obstacles = new Map();
+    this.projectiles = new Map();
+    this.bike = makeMotorbike();
+    this.bike.visible = false;
+    stage.scene.add(this.bike);
+    this.aura = new T.Mesh(
+      new T.TorusGeometry(1.1, 0.045, 4, 24),
+      new T.MeshBasicMaterial({color: 0x67eaff, transparent: true, opacity: 0.8}),
+    );
+    this.aura.visible = false;
+    stage.scene.add(this.aura);
   }
 
   clear() {
-    for (const collection of [this.gates, this.tokens]) {
+    for (const collection of [this.gates, this.tokens, this.obstacles, this.projectiles]) {
       collection.forEach(m => disposeGroup(m));
       collection.clear();
     }
     this.particles.forEach(p => disposeGroup(p.mesh));
     this.particles.length = 0;
+    this.bike.visible = this.aura.visible = false;
   }
 
   burst(pos, color, n = 8) {
@@ -57,12 +71,57 @@ export class RunEntities {
     for (const g of run.gates) {
       if (!this.gates.has(g.id))
         this.gates.set(g.id, makeGate(scene, map, g.center, g.gap, playerX + g.x));
-      this.gates.get(g.id).position.x = playerX + g.x;
+      const model = this.gates.get(g.id);
+      model.position.x = playerX + g.x;
+      if (g.broken && model.visible)
+        this.burst(new T.Vector3(playerX + g.x, g.center, 0), map.pipe, 12);
+      model.visible = !g.broken;
+      const expanded = effectiveGate(run, g).gap;
+      // The gate meshes are built around their original center; shift the two halves apart.
+      if (!model.userData.originals)
+        model.userData.originals = model.children.map(c => c.position.y);
+      model.children.forEach((c, i) => {
+        const y = model.userData.originals[i];
+        c.position.y = y + (Math.sign(y - g.center) * (expanded - g.gap)) / 2;
+      });
     }
     for (const c of run.tokens) {
       if (!this.tokens.has(c.id)) this.tokens.set(c.id, makeCoin(scene, playerX + c.x, c.y));
       this.tokens.get(c.id).position.x = playerX + c.x;
     }
+    for (const [data, models, make] of [
+      [run.obstacles, this.obstacles, makeHazard],
+      [run.projectiles, this.projectiles, makeProjectile],
+    ]) {
+      const ids = new Set(data.map(o => o.id));
+      for (const [id, model] of models)
+        if (!ids.has(id)) {
+          if (model.position.x > playerX - 2) this.burst(model.position, 0xffc35b, 8);
+          disposeGroup(model);
+          models.delete(id);
+        }
+      for (const o of data) {
+        if (!models.has(o.id)) {
+          const model = make(o.kind);
+          scene.add(model);
+          models.set(o.id, model);
+        }
+        const model = models.get(o.id);
+        model.position.set(playerX + o.x, o.y, 0);
+        model.userData.wings?.forEach(
+          (w, i) => (w.rotation.x = Math.sin(run.tick / 12) * (i ? 0.5 : -0.5)),
+        );
+        if (models === this.projectiles) model.rotation.z = run.tick / 10;
+      }
+    }
+    const kind = activePower(run);
+    this.bike.visible = kind === 'bike';
+    this.bike.position.set(playerX, run.y - 0.3, 0.25);
+    this.aura.visible = !!kind;
+    this.aura.position.set(playerX, run.y, 0.7);
+    this.aura.material.color.setHex(powerFor(run).color);
+    this.aura.rotation.z = run.tick / 50;
+    this.aura.scale.setScalar(kind === 'tiny' ? 0.5 : 1 + Math.sin(run.tick / 8) * 0.05);
   }
 
   update(dt) {

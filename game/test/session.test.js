@@ -77,19 +77,15 @@ test('perfil de convidado sobrevive a salvar e recarregar', () => {
   assert.deepEqual(again.best, {'cipo:normal': 40});
 });
 
-test('convidado compra mapa e skin uma vez só e respeita o saldo', async () => {
-  const s = new Session(withProgress(50));
-  await s.buy(MAPS[1], 'map');
+test('mapas exigem campanha; compra de skin é idempotente e respeita saldo', async () => {
+  const s = new Session(withProgress(10));
+  await assert.rejects(s.buy(MAPS[1], 'map'), /Conclua/);
   assert.equal(s.data.coins, 10);
-  assert.deepEqual(s.data.maps, ['cipo', 'rio']);
-  await s.buy(MAPS[1], 'map');
-  assert.equal(s.data.coins, 10, 'não cobra duas vezes');
-  await assert.rejects(s.buy(MAPS[2], 'map'), /Moedas insuficientes/);
-  await s.buy(PIGS[0], 'skin');
-  assert.equal(s.data.coins, 10, 'skin grátis não custa nada');
+  assert.deepEqual(s.data.maps, ['cipo']);
+  await s.buy(PIGS[4], 'skin');
   await s.buy(PIGS[4], 'skin');
   assert.equal(s.data.coins, 0);
-  assert.ok(s.data.unlocked.includes(PIGS[4].id));
+  await assert.rejects(s.buy(PIGS[5], 'skin'), /Moedas insuficientes/);
 });
 
 test('convidado recebe um bilhete de voo local com semente e mapa', async () => {

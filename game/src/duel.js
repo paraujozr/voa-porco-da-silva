@@ -32,8 +32,19 @@ export class DuelController {
       g.duel = room;
       g.difficulty = 'normal';
       g.switchMap(0);
-      if (PIGS[g.charIndex].cost && !g.save.unlocked.includes(PIGS[g.charIndex].id)) g.switchPig(0);
-      g.prepare({id: room.code, seed: room.seed, level: room.level, mapId: room.mapId}, true);
+      g.switchPig(PIGS.findIndex(p => p.id === 'mandrake'));
+      g.prepare(
+        {
+          id: room.code,
+          seed: room.seed,
+          level: room.level,
+          mapId: room.mapId,
+          mode: 'endless',
+          skinId: 'mandrake',
+          rules: room.rules,
+        },
+        true,
+      );
       g.social?.hide();
       g.setState('countdown');
     }
@@ -74,7 +85,12 @@ export class DuelController {
     try {
       const data = {code: g.duel.code};
       if (g.run && g.duel.state === 'racing' && (g.state === 'playing' || final)) {
-        Object.assign(data, {inputs: [...g.inputs], ticks: g.run.tick, quit: final});
+        Object.assign(data, {
+          inputs: [...g.inputs],
+          ticks: g.run.tick,
+          powers: [...g.run.powerInputs],
+          quit: final,
+        });
       }
       const out = await g.session.call('duelTick', data);
       if (g.duel?.code === data.code) this.handleRoom(out.room);

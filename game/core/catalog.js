@@ -20,6 +20,7 @@ export const SKINS = [
   {id: 'waddles', cost: 45},
   {id: 'hamm', cost: 55},
   {id: 'hawk', cost: 60},
+  {id: 'queijo', cost: 35},
 ];
 export const MAPS = [
   {id: 'cipo', cost: 0},

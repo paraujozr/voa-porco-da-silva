@@ -1,3 +1,4 @@
+import {STAGES, speedFor, activePower, powerFor} from '../core/adventure.js';
 import * as T from 'three';
 import {MAPS, PIGS, MEMES} from './config.js';
 import {DIFFICULTY_NAMES} from './difficulty.js';
@@ -58,6 +59,8 @@ export class Game {
     this.mapIndex = 0;
     this.charIndex = 0;
     this.difficulty = 'normal';
+    this.mode = 'campaign';
+    this.pendingPower = false;
     this.world = null;
     this.pig = null;
     this.prop = null; // the menu set piece the pig sits on
@@ -149,8 +152,11 @@ export class Game {
   prepare(ticket, duelMode = false) {
     this.clearRun();
     this.ticket = ticket;
-    this.run = createRun(ticket.seed, ticket.level, duelMode);
+    this.run = createRun(ticket.seed, ticket.level, duelMode, ticket);
     this.inputs = [];
+    this.run.powerInputs = [];
+    this.pendingPower = false;
+    this.saveError = '';
     this.pendingFlap = false;
     this.settlement = null;
     this.accumulator = 0;
@@ -197,10 +203,10 @@ export class Game {
       // From the menu the pig hops off its seat while the ticket is fetched; from the game-over
       // screen (retry) there is nothing to hop from, so go straight in.
       if (this.state === STATE.MENU) {
-        this.beginTakeoff(this.session.begin(map.id, data.id, this.difficulty));
+        this.beginTakeoff(this.session.begin(map.id, data.id, this.difficulty, this.mode));
         return;
       }
-      this.prepare(await this.session.begin(map.id, data.id, this.difficulty));
+      this.prepare(await this.session.begin(map.id, data.id, this.difficulty, this.mode));
       this.setState(STATE.PLAYING);
       this.audio.play('flap');
     } catch (e) {
@@ -254,7 +260,7 @@ export class Game {
   async mapAction() {
     const map = MAPS[this.mapIndex];
     if (isOwned(this.save, 'map', map)) this.closePanel('maps-panel');
-    else await this.buy(map, 'map');
+    else toast('Conclua o destino anterior na campanha para liberar este mapa.');
   }
 
   beginTakeoff(ticketPromise) {
@@ -316,13 +322,29 @@ export class Game {
 
   async settle(quit = false) {
     if (!this.run || !this.ticket || this.duel) return;
-    this.settlement = this.session.settle(this.ticket, this.run, [...this.inputs], quit);
+    this.settlement = this.session
+      .settle(this.ticket, this.run, [...this.inputs], quit)
+      .then(result => {
+        this.saveError = '';
+        this.ticket.needsSettle = false;
+        return result;
+      });
     return this.settlement;
   }
 
   updateContinue() {
     const {run, save} = this;
-    const allowed = run && !this.duel && run.dead && run.reason !== 'limit' && run.continues < 3;
+    if (this.saveError) {
+      $('continue-note').textContent = this.saveError;
+      $('continue-run').hidden = true;
+      return;
+    }
+    const allowed =
+      run &&
+      !this.duel &&
+      run.dead &&
+      !['limit', 'complete'].includes(run.reason) &&
+      run.continues < 3;
     $('continue-run').hidden = !allowed;
     if (allowed) {
       const price = continuePrice(run.continues);
@@ -342,19 +364,34 @@ export class Game {
     if (this.state !== STATE.PLAYING) return;
     const {run, duel} = this;
     this.setState(STATE.OVER);
-    if (run.reason === 'limit') this.music.stop();
+    if (['limit', 'complete'].includes(run.reason)) this.music.stop();
     else this.music.fail();
     showModal({
-      eyebrow: duel ? 'DUELO EM ANDAMENTO' : 'POUSO NÃO PROGRAMADO',
-      title: run.reason === 'limit' ? 'Voo concluído!' : 'Deu ruim, parceiro!',
+      eyebrow: duel
+        ? 'DUELO EM ANDAMENTO'
+        : run.reason === 'complete'
+          ? 'PASSAPORTE CARIMBADO'
+          : 'POUSO NÃO PROGRAMADO',
+      title:
+        run.reason === 'complete'
+          ? 'Mapa concluído!'
+          : run.reason === 'limit'
+            ? 'Voo concluído!'
+            : 'Deu ruim, parceiro!',
       text:
-        run.reason === 'limit' && !duel
-          ? `Sessão de ${SOLO_SECONDS / 60} minutos concluída: ${run.passed} canos. Seu resultado será salvo; você pode começar outro voo.`
-          : `${this.save.nickname}, você atravessou ${run.passed} canos.`,
+        run.reason === 'complete'
+          ? `${MAPS[this.mapIndex].name}: ${run.passed} canos! ${STAGES[run.mapId].next ? 'Próximo destino liberado ao salvar.' : 'Você completou a volta pelo Brasil!'}`
+          : run.reason === 'limit' && !duel
+            ? `Sessão de ${SOLO_SECONDS / 60} minutos concluída: ${run.passed} canos. Seu resultado será salvo; você pode começar outro voo.`
+            : `${this.save.nickname}, você atravessou ${run.passed} canos.`,
       results: true,
       retry: !duel,
       note: duel ? 'Aguardando o resultado do duelo…' : 'Salvando a partida…',
     });
+    $('retry').textContent =
+      run.reason === 'complete' && STAGES[run.mapId].next
+        ? 'PRÓXIMO DESTINO →'
+        : 'MAIS UMA TENTATIVA →';
     $('result-score').textContent = run.passed;
     $('result-coins').textContent = run.coins;
     $('result-best').textContent = this.bestRecord();
@@ -369,8 +406,8 @@ export class Game {
       this.updateContinue();
     } catch (e) {
       // Say why: the server's reason (e.g. "Replay inválido") is what lets a bug report be acted on.
-      $('continue-note').textContent =
-        `Não foi possível salvar: ${e.message} Voltar ou tentar novamente fará uma nova tentativa.`;
+      this.saveError = `Não foi possível salvar: ${e.message} Voltar ou tentar novamente fará uma nova tentativa.`;
+      this.updateContinue();
       console.error('settleRun failed:', e.code, e.message);
       this.settlement = null;
       this.ticket.needsSettle = true;
@@ -459,12 +496,42 @@ export class Game {
     }
   }
 
-  retry() {
+  async retry() {
+    if (this.busy) return;
     if (this.ticket?.needsSettle) {
-      this.settlement = this.settle();
-      this.ticket.needsSettle = false;
+      this.busy = true;
+      try {
+        await this.settle();
+      } catch (e) {
+        this.saveError = `Não foi possível salvar: ${e.message}`;
+        this.updateContinue();
+        return;
+      } finally {
+        this.busy = false;
+      }
+    }
+    if (this.settlement) {
+      this.busy = true;
+      try {
+        await this.settlement;
+      } catch (e) {
+        this.saveError = 'Não foi possível salvar: ' + e.message;
+        this.updateContinue();
+        return;
+      } finally {
+        this.busy = false;
+      }
+    }
+    if (this.run?.reason === 'complete') {
+      const next = STAGES[this.run.mapId].next;
+      if (next && this.save.maps.includes(next)) this.switchMap(MAPS.findIndex(m => m.id === next));
     }
     this.startFlight();
+  }
+
+  power() {
+    if (this.state === STATE.PLAYING && this.run.tick >= this.run.powerReady)
+      this.pendingPower = true;
   }
 
   flap() {
@@ -512,14 +579,37 @@ export class Game {
     }
     const beforeCoins = run.coins,
       beforePassed = run.passed;
-    const result = advance(run, this.pendingFlap);
+    const usePower = this.pendingPower && run.tick >= run.powerReady;
+    if (usePower) {
+      run.powerInputs.push(run.tick);
+      toast(powerFor(run).name);
+    }
+    const result = advance(run, this.pendingFlap, usePower);
+    this.pendingPower = false;
     this.pendingFlap = false;
     if (run.coins > beforeCoins) this.audio.play('coin');
     if (run.passed > beforePassed && run.passed % 3 === 0) toast(MEMES[run.passed % MEMES.length]);
     $('score').textContent = run.passed;
     $('run-coins').textContent = run.coins;
+    this.updateFlightInfo();
     if (result.sixSeven) this.celebrate();
     if (result.dead) this.end();
+  }
+
+  updateFlightInfo() {
+    const run = this.run,
+      stage = STAGES[run.mapId];
+    const zone = stage.zones[Math.min(2, Math.floor((run.passed / stage.goal) * 3))];
+    $('flight-progress').textContent =
+      `${run.mode === 'campaign' && !run.duel ? `${run.passed}/${stage.goal} canos · ${zone}` : 'Voo livre'} · ${(speedFor(run) / LEVELS[run.level].speed).toFixed(2)}× velocidade`;
+    const p = powerFor(run),
+      wait = Math.max(0, Math.ceil((run.powerReady - run.tick) / 120));
+    $('power-button').disabled = wait > 0 || this.state !== STATE.PLAYING;
+    $('power-button').textContent = activePower(run)
+      ? `${p.name} · ATIVO`
+      : wait
+        ? `${p.name} · ${wait}s`
+        : `${p.name} ⚡ E`;
   }
 
   animate(now) {
@@ -569,16 +659,8 @@ export class Game {
   tickScene(dt) {
     const {run} = this;
     this.time += dt;
-    this.world.update(
-      this.time,
-      dt,
-      this.state === STATE.PLAYING,
-      run ? LEVELS[run.level].speed + Math.min(run.passed * 0.04, LEVELS[run.level].boost) : 0,
-    );
-    this.driftProp(
-      dt,
-      run ? LEVELS[run.level].speed + Math.min(run.passed * 0.04, LEVELS[run.level].boost) : 0,
-    );
+    this.world.update(this.time, dt, this.state === STATE.PLAYING, run ? speedFor(run) : 0);
+    this.driftProp(dt, run ? speedFor(run) : 0);
     this.flapPulse = Math.max(0, this.flapPulse - dt * 4);
     animatePig(this.pig, {
       time: this.time,
@@ -606,6 +688,9 @@ export class Game {
         );
       }
       if (this.dance <= 0) $('six-seven').hidden = true;
+    }
+    if (run && this.state !== STATE.MENU) {
+      this.pig.scale.setScalar(activePower(run) === 'tiny' ? 0.38 : PIG_SCALE);
     }
     this.entities.update(dt);
   }

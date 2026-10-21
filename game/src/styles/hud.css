@@ -246,3 +246,70 @@
     animation: none;
   }
 }
+
+#power-button {
+  position: absolute;
+  pointer-events: auto;
+  bottom: max(20px, env(safe-area-inset-bottom));
+  right: 16px;
+  max-width: min(300px, 65vw);
+  min-height: 56px;
+  font-size: 20px;
+  padding: 12px 18px;
+  touch-action: manipulation;
+}
+#power-button:disabled {
+  opacity: 0.75;
+}
+#flight-progress {
+  font-size: 16px;
+  max-width: 55vw;
+}
+@media (max-width: 680px) {
+  .flight-hint {
+    display: none;
+  }
+  #power-button {
+    bottom: max(24px, env(safe-area-inset-bottom));
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 680px) {
+  .stat {
+    left: 12px;
+    min-width: 0;
+    width: 82px;
+    box-sizing: border-box;
+  }
+  .flight-info {
+    left: 104px;
+    right: 12px;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 4px;
+    padding: 8px;
+  }
+  #flight-progress {
+    flex-basis: 100%;
+    max-width: none;
+    font-size: 15px;
+    line-height: 1.1;
+  }
+  .flight-info .icon-btn {
+    min-height: 44px;
+    font-size: 16px;
+  }
+  #rival-distance {
+    width: 100%;
+    font-size: 14px;
+  }
+  #toast {
+    top: 195px;
+    max-width: 85vw;
+  }
+}
+
+body.playing #toast {
+  top: 195px;
+}

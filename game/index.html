@@ -8,7 +8,7 @@
       <span>VOA PORCO<small>BRASIL AFORA</small></span>
     </a>
     <div class="top-right">
-      <span class="build">BETA 1.2</span>
+      <span class="build">BETA 1.3</span>
       <span class="wallet"><span data-icon="coin"></span> <b id="wallet">0</b></span>
       <button id="settings-open" class="icon-btn" aria-label="Ajustes"><span data-icon="gear"></span></button>
     </div>
@@ -72,6 +72,10 @@
       </div>
       <button id="map-action" class="primary"></button>
     </div>
+    <div class="levels" role="group" aria-label="Modo de voo">
+      <button class="secondary" data-flight-mode="campaign" aria-pressed="true">CAMPANHA</button>
+      <button class="secondary" data-flight-mode="endless" aria-pressed="false">VOO LIVRE</button>
+    </div>
     <div class="levels" role="group" aria-label="Dificuldade">
       <span class="levels-label">DIFICULDADE</span>
       <button class="secondary" data-level="easy" aria-pressed="false">De boa</button>
@@ -92,7 +96,7 @@
       <button id="music-toggle" class="secondary">♫ MÚSICA ON</button>
       <button id="quality" class="secondary">3D ALTO</button>
     </div>
-    <small class="dialog-foot">Espaço, seta para cima ou toque fazem o porco voar. Esc ou P pausam. Voo solo: até 60 min por partida; duelo: 3 min.</small>
+    <small class="dialog-foot">Espaço, seta para cima ou toque fazem o porco voar. E ou o botão de poder ativa a habilidade da skin. Esc ou P pausam. Voo solo: até 60 min por partida; duelo: 3 min.</small>
   </div>
 </section>
 
@@ -104,10 +108,11 @@
   </div>
   <div class="flight-info">
     <span id="flight-map"></span>
-    <span id="rival-distance" hidden></span>
+    <span id="flight-progress"></span><span id="rival-distance" hidden></span>
     <span class="coins"><span data-icon="coin"></span> <b id="run-coins">0</b></span>
     <button id="pause" class="icon-btn"></button>
   </div>
+  <button id="power-button" class="primary" aria-label="Ativar poder da skin"></button>
   <div class="flight-hint">Toque na tela para bater as asas</div>
 </section>
 <section id="modal" hidden role="dialog" aria-modal="true" aria-labelledby="modal-title">
@@ -224,7 +229,7 @@
       <button id="room-ready" class="primary">ESTOU PRONTO <span data-icon="check"></span></button>
       <button id="room-leave" class="secondary">SAIR DA SALA</button>
     </div>
-    <p class="social-note">Mesma sequência de obstáculos e largada sincronizada. Quem atravessar mais canos vence. Empates são possíveis. Desconexão por mais de 15 segundos encerra o voo na última pontuação validada.</p>
+    <p class="social-note">Mesmo Mandrake e poder para os dois, mesma sequência de obstáculos e largada sincronizada. Quem atravessar mais canos vence. Empates são possíveis. Desconexão por mais de 15 segundos encerra o voo na última pontuação validada.</p>
   </div>
 </section>
 <div id="countdown" hidden role="status"></div>

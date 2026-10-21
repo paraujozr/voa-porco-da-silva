@@ -10,12 +10,21 @@ const call = async (name, data = {}, token) => {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'CF-Connecting-IP': fakeIp,
+      ...(base.startsWith('http://127.0.0.1:') ? {'CF-Connecting-IP': fakeIp} : {}),
       ...(token ? {Authorization: `Bearer ${token}`} : {}),
     },
-    body: JSON.stringify(data),
+    body: JSON.stringify({...data, rules: 2}),
   });
-  const result = await response.json();
+  const body = await response.text();
+  if (!response.headers.get('content-type')?.includes('application/json'))
+    throw Error(
+      name +
+        ': HTTP ' +
+        response.status +
+        ' ' +
+        (body.match(/<title>(.*?)<\/title>/s)?.[1] || 'Resposta sem JSON'),
+    );
+  const result = JSON.parse(body);
   return {status: response.status, ...result};
 };
 const name = `qa_${randomBytes(5).toString('hex')}`,
@@ -47,18 +56,33 @@ if (runTicket.status !== 200) {
 }
 assert.equal(runTicket.status, 200);
 const run = createRun(runTicket.seed, 'normal');
-while (!run.dead) advance(run, false);
+while (!run.dead) advance(run, false, run.tick === 0);
 await new Promise(resolve => setTimeout(resolve, Math.max(0, (run.tick / 120) * 1000 - 1000)));
+assert.equal(
+  (
+    await call(
+      'settleRun',
+      {runId: runTicket.id, ticks: 2, inputs: [], powers: [0, 1]},
+      login.token,
+    )
+  ).status,
+  400,
+);
 const result = await call(
   'settleRun',
-  {runId: runTicket.id, ticks: run.tick, inputs: []},
+  {runId: runTicket.id, ticks: run.tick, inputs: [], powers: [0]},
   login.token,
 );
 assert.equal(result.status, 200);
 assert.equal(result.profile.runs, 1);
 assert.equal(
-  (await call('settleRun', {runId: runTicket.id, ticks: run.tick, inputs: []}, login.token)).profile
-    .runs,
+  (
+    await call(
+      'settleRun',
+      {runId: runTicket.id, ticks: run.tick, inputs: [], powers: [0]},
+      login.token,
+    )
+  ).profile.runs,
   1,
 );
 const guest = await call('guest', {nickname: 'Rival visitante'}),

@@ -1,3 +1,5 @@
+import {replay as legacyReplay} from './engine-v1.js';
+import {RULES_VERSION} from './adventure.js';
 import {randomInt, randomUUID, createHash} from 'node:crypto';
 import {
   replay,
@@ -27,8 +29,19 @@ export function createHandlers(db, ApiError) {
     if ((data.ticks * 1000) / 120 > now - saved.startAt + 1500) fail('Tempo de partida inválido.');
     if (saved.ticks && hash(data.inputs.filter(t => t < saved.ticks)) !== saved.logHash)
       fail('O histórico da partida mudou.');
-    return replay({
+    const powers = data.powers || [];
+    if (
+      saved.ticks &&
+      saved.powerHash &&
+      hash(powers.filter(t => t < saved.ticks)) !== saved.powerHash
+    )
+      fail('O histórico dos poderes mudou.');
+    return (saved.rules === RULES_VERSION ? replay : legacyReplay)({
       seed: saved.seed,
+      mapId: saved.mapId,
+      skinId: saved.skinId,
+      mode: saved.mode,
+      powers,
       level: saved.level,
       duel,
       inputs: data.inputs,
@@ -62,6 +75,8 @@ export function createHandlers(db, ApiError) {
   };
   const buyItem = async (uid, data) =>
     db.runTransaction(async tx => {
+      if (data.kind === 'map')
+        fail('Conclua o mapa anterior na campanha para liberar este destino.');
       const items = data.kind === 'map' ? MAPS : SKINS,
         item = items.find(x => x.id === data.id);
       if (!item) fail('Item inexistente.');
@@ -92,7 +107,14 @@ export function createHandlers(db, ApiError) {
       if ((map.cost && !p.maps.includes(map.id)) || (skin.cost && !p.unlocked.includes(skin.id)))
         fail('Seleção ainda bloqueada.');
       if (now - (p.lastStart || 0) < 1000) fail('Aguarde um instante.', 'resource-exhausted');
+      if (data.rules != null && data.rules !== RULES_VERSION)
+        fail('Atualize o jogo para começar uma partida.');
+      if (data.mode && !['campaign', 'endless'].includes(data.mode)) fail('Modo inválido.');
       const run = {
+        rules: data.rules || 1,
+        mode: data.mode || 'endless',
+        skinId: skin.id,
+        powerHash: hash([]),
         uid,
         seed,
         level: data.level,
@@ -121,7 +143,12 @@ export function createHandlers(db, ApiError) {
       const r = rs.data(),
         p = ps.data();
       if (p.activeRun !== rid) fail('Outra partida foi iniciada nesta conta.');
-      if (r.state === 'dead' && r.ticks === data.ticks && r.logHash === hash(data.inputs))
+      if (
+        r.state === 'dead' &&
+        r.ticks === data.ticks &&
+        r.logHash === hash(data.inputs) &&
+        (!r.powerHash || r.powerHash === hash(data.powers || []))
+      )
         return {profile: p, result: r.result};
       if (r.state !== 'active') fail('Partida encerrada.');
       const sim = verify(r, data, now);
@@ -139,6 +166,7 @@ export function createHandlers(db, ApiError) {
         state: 'dead',
         ticks: sim.tick,
         logHash: hash(data.inputs),
+        powerHash: hash(data.powers || []),
         paidCoins: sim.coins,
         counted: true,
         result,
@@ -169,7 +197,7 @@ export function createHandlers(db, ApiError) {
         r.state !== 'dead' ||
         data.tick !== r.ticks ||
         r.revives.length >= 3 ||
-        ['limit', 'quit'].includes(r.result.reason)
+        ['limit', 'quit', 'complete'].includes(r.result.reason)
       )
         fail('Continue indisponível.');
       const price = continuePrice(r.revives.length);
@@ -180,7 +208,7 @@ export function createHandlers(db, ApiError) {
       tx.update(rr, {state: 'active', revives});
       return {profile: p, revives};
     });
-  const createRoom = async uid => {
+  const createRoom = async (uid, data = {}) => {
     const now = Date.now();
     for (let attempt = 0; attempt < 8; attempt++) {
       const code = String(randomInt(100000, 1000000)),
@@ -194,6 +222,9 @@ export function createHandlers(db, ApiError) {
           fail('Aguarde alguns segundos para criar outra sala.', 'resource-exhausted');
         const room = {
           code,
+          rules: data.rules || 1,
+          skinId: 'mandrake',
+          mode: 'endless',
           host: uid,
           members: [uid],
           state: 'waiting',
@@ -239,6 +270,8 @@ export function createHandlers(db, ApiError) {
       if (!rs.exists || rs.data().expiresAt < now)
         return {error: 'Sala não encontrada ou expirada.', serverNow: now};
       const room = rs.data();
+      if ((room.rules || 1) !== (data.rules || 1))
+        fail('Atualizem o jogo nos dois aparelhos antes de entrar na sala.');
       if (room.members.includes(uid)) return {room, serverNow: now};
       if (room.state !== 'waiting' || room.members.length >= 2)
         return {error: 'Sala cheia ou já iniciada.', serverNow: now};
@@ -329,11 +362,17 @@ export function createHandlers(db, ApiError) {
         if (now - p.lastSeen < 700 && !data.quit)
           fail('Envio muito frequente.', 'resource-exhausted');
         if (data.ticks < p.ticks) fail('Atualização antiga.');
-        const sim = verify({...r, ticks: p.ticks, logHash: p.logHash}, data, now, true);
+        const sim = verify(
+          {...r, ticks: p.ticks, logHash: p.logHash, powerHash: p.powerHash},
+          data,
+          now,
+          true,
+        );
         p.distance = sim.passed;
         p.coins = sim.coins;
         p.ticks = sim.tick;
         p.logHash = hash(data.inputs);
+        p.powerHash = hash(data.powers || []);
         p.lastSeen = now;
         if (sim.dead || data.quit) p.state = 'done';
       }

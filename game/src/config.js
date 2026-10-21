@@ -269,6 +269,17 @@ export const PIGS = [
     'Pop',
   ),
 ];
+PIGS.push(
+  pig(
+    'queijo',
+    'Porco do Queijo',
+    'UAI, RECEBA!',
+    'Chapéu de queijo, avental e munição mineira.',
+    0xedb29b,
+    0xe6ac35,
+    35,
+  ),
+);
 export const MEMES = [
   'RECEBA!',
   'BORA, BILL!',

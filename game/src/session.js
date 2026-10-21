@@ -1,3 +1,4 @@
+import {RULES_VERSION} from '../core/adventure.js';
 import {loadGuestProfile, saveGuestProfile} from './guest-profile.js';
 import {nickname, credit, continuePrice} from '../core/engine.js';
 import {CloudTransport} from './transport.js';
@@ -96,7 +97,7 @@ export class Session {
     const begin = Date.now();
     let result;
     try {
-      result = await this.cloud.call(name, data);
+      result = await this.cloud.call(name, {...data, rules: RULES_VERSION});
     } catch (e) {
       if (e.code === 'unauthenticated') {
         this.cloud.clear();
@@ -126,6 +127,7 @@ export class Session {
     }
   }
   async buy(item, kind) {
+    if (kind === 'map') throw Error('Conclua o mapa anterior na campanha.');
     await this.init();
     if (this.user) {
       this.adopt(await this.call('buyItem', {id: item.id, kind}));
@@ -139,22 +141,31 @@ export class Session {
     this.saveGuest();
     this.changed();
   }
-  async begin(mapId, skinId, level) {
+  async begin(mapId, skinId, level, mode = 'campaign') {
     await this.init();
     if (this.user) {
       if (!this.accountReady) throw Error('Aguarde o perfil carregar.');
-      return this.call('beginRun', {mapId, skinId, level});
+      return this.call('beginRun', {mapId, skinId, level, mode});
     }
     return {
       id: crypto.randomUUID(),
       seed: crypto.getRandomValues(new Uint32Array(1))[0],
       level,
       mapId,
+      skinId,
+      mode,
+      rules: RULES_VERSION,
     };
   }
   async settle(ticket, run, inputs, quit = false) {
     if (this.user) {
-      const out = await this.call('settleRun', {runId: ticket.id, inputs, ticks: run.tick, quit});
+      const out = await this.call('settleRun', {
+        runId: ticket.id,
+        inputs,
+        ticks: run.tick,
+        powers: run.powerInputs || [],
+        quit,
+      });
       this.adopt(out.profile);
       return out.result;
     }

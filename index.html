@@ -1,8 +1,8 @@
 <!doctype html>
 <html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0d2430"><meta name="description" content="Voa Porco: Brasil afora. Uma aventura 3D brasileira entre praias, florestas e muita resenha."><link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2264%22%20height%3D%2264%22%20viewBox%3D%220%200%209%209%22%20shape-rendering%3D%22crispEdges%22%3E%3Cpath%20fill%3D%22%23e67d91%22%20d%3D%22M0%200h2v1h-2zM7%200h2v1h-2zM0%201h9v1h-9zM0%202h2v1h-2zM3%202h3v1h-3zM7%202h2v1h-2zM0%203h9v1h-9zM1%204h1v1h-1zM7%204h1v1h-1zM1%205h1v1h-1zM7%205h1v1h-1zM1%206h1v1h-1zM7%206h1v1h-1zM2%207h5v1h-5z%22%2F%3E%3Cpath%20fill%3D%22%2308171d%22%20d%3D%22M2%202h1v1h-1zM6%202h1v1h-1zM3%205h1v1h-1zM5%205h1v1h-1z%22%2F%3E%3Cpath%20fill%3D%22%23f299a6%22%20d%3D%22M2%204h5v1h-5zM2%205h1v1h-1zM4%205h1v1h-1zM6%205h1v1h-1zM2%206h5v1h-5z%22%2F%3E%3Cpath%20fill%3D%22%233a7f9c%22%20d%3D%22M0%208h9v1h-9z%22%2F%3E%3C%2Fsvg%3E" />
-    <title>Voa Porco • Brasil afora</title><link href="https://fonts.googleapis.com/css2?family=Jersey+15&family=Jersey+20&display=swap" rel="stylesheet">  <script type="module" crossorigin src="./assets/index-DCN2_Q-0.js"></script>
-  <link rel="modulepreload" crossorigin href="./assets/three-DFo8isK4.js">
-  <link rel="stylesheet" crossorigin href="./assets/index-CKyRqev9.css">
+    <title>Voa Porco • Brasil afora</title><link href="https://fonts.googleapis.com/css2?family=Jersey+15&family=Jersey+20&display=swap" rel="stylesheet">  <script type="module" crossorigin src="./assets/index-CEvMYFQx.js"></script>
+  <link rel="modulepreload" crossorigin href="./assets/three-DvhYvyG1.js">
+  <link rel="stylesheet" crossorigin href="./assets/index-BREqRTrp.css">
 </head><body><canvas id="world" aria-label="Cenário tridimensional do jogo"></canvas><div class="bunting" aria-hidden="true"></div>
 <main id="menu">
   <header id="top">
@@ -11,7 +11,7 @@
       <span>VOA PORCO<small>BRASIL AFORA</small></span>
     </a>
     <div class="top-right">
-      <span class="build">BETA 1.2</span>
+      <span class="build">BETA 1.3</span>
       <span class="wallet"><span data-icon="coin"></span> <b id="wallet">0</b></span>
       <button id="settings-open" class="icon-btn" aria-label="Ajustes"><span data-icon="gear"></span></button>
     </div>
@@ -75,6 +75,10 @@
       </div>
       <button id="map-action" class="primary"></button>
     </div>
+    <div class="levels" role="group" aria-label="Modo de voo">
+      <button class="secondary" data-flight-mode="campaign" aria-pressed="true">CAMPANHA</button>
+      <button class="secondary" data-flight-mode="endless" aria-pressed="false">VOO LIVRE</button>
+    </div>
     <div class="levels" role="group" aria-label="Dificuldade">
       <span class="levels-label">DIFICULDADE</span>
       <button class="secondary" data-level="easy" aria-pressed="false">De boa</button>
@@ -95,7 +99,7 @@
       <button id="music-toggle" class="secondary">♫ MÚSICA ON</button>
       <button id="quality" class="secondary">3D ALTO</button>
     </div>
-    <small class="dialog-foot">Espaço, seta para cima ou toque fazem o porco voar. Esc ou P pausam. Voo solo: até 60 min por partida; duelo: 3 min.</small>
+    <small class="dialog-foot">Espaço, seta para cima ou toque fazem o porco voar. E ou o botão de poder ativa a habilidade da skin. Esc ou P pausam. Voo solo: até 60 min por partida; duelo: 3 min.</small>
   </div>
 </section>
 
@@ -107,10 +111,11 @@
   </div>
   <div class="flight-info">
     <span id="flight-map"></span>
-    <span id="rival-distance" hidden></span>
+    <span id="flight-progress"></span><span id="rival-distance" hidden></span>
     <span class="coins"><span data-icon="coin"></span> <b id="run-coins">0</b></span>
     <button id="pause" class="icon-btn"></button>
   </div>
+  <button id="power-button" class="primary" aria-label="Ativar poder da skin"></button>
   <div class="flight-hint">Toque na tela para bater as asas</div>
 </section>
 <section id="modal" hidden role="dialog" aria-modal="true" aria-labelledby="modal-title">
@@ -227,7 +232,7 @@
       <button id="room-ready" class="primary">ESTOU PRONTO <span data-icon="check"></span></button>
       <button id="room-leave" class="secondary">SAIR DA SALA</button>
     </div>
-    <p class="social-note">Mesma sequência de obstáculos e largada sincronizada. Quem atravessar mais canos vence. Empates são possíveis. Desconexão por mais de 15 segundos encerra o voo na última pontuação validada.</p>
+    <p class="social-note">Mesmo Mandrake e poder para os dois, mesma sequência de obstáculos e largada sincronizada. Quem atravessar mais canos vence. Empates são possíveis. Desconexão por mais de 15 segundos encerra o voo na última pontuação validada.</p>
   </div>
 </section>
 <div id="countdown" hidden role="status"></div>

@@ -39,8 +39,8 @@ test('catálogo do servidor e config do cliente concordam em ids e preços', () 
     CLIENT_MAPS.map(m => [m.id, m.cost]),
     MAPS.map(m => [m.id, m.cost]),
   );
-  assert.equal(PIGS.length, 21);
-  assert.equal(new Set(PIGS.map(p => p.id)).size, 21);
+  assert.equal(PIGS.length, 22);
+  assert.equal(new Set(PIGS.map(p => p.id)).size, 22);
   assert.ok(
     PIGS.slice(0, 4).every(p => p.cost === 0),
     'quatro skins iniciais gratuitas',

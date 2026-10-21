@@ -40,6 +40,7 @@ export function loadGuestProfile(storage) {
     ranked: meta.ranked || {},
     totalCoins: meta.totalCoins || save.coins,
     runs: meta.runs || 0,
+    completed: Array.isArray(meta.completed) ? meta.completed : [],
     nickname: meta.nickname || DEFAULT_NICKNAME,
   };
 }
@@ -55,6 +56,7 @@ export function saveGuestProfile(storage, profile) {
         ranked: profile.ranked,
         totalCoins: profile.totalCoins,
         runs: profile.runs,
+        completed: profile.completed || [],
       }),
     );
   } catch {}

@@ -271,6 +271,7 @@ export function buildWorld(scene, map) {
     b(cr, 0xe6e4ce, 0, 1.9, 0, 0.4, 0.4, 0.4);
     b(cr, 0xe6e4ce, 0, 1.3, 0, 2.3, 0.22, 0.3);
     const cable = root(group, 0, 0, -26);
+    movers.push({type: 'landmark', g: cable, base: cable.position.clone()});
     b(cable, 0x354d4f, 12, 2.2, 0, 10, 0.05, 0.06, 0.18);
     const car = b(cable, 0xe8b35a, 12, 1.6, 0, 0.65, 0.65, 0.65);
     movers.push({type: 'cable', g: car, base: car.position.clone(), seed: 1});
@@ -278,6 +279,7 @@ export function buildWorld(scene, map) {
   if (map.id === 'brasilia') {
     const monument = root(group, 2, 0, -27),
       white = 0xede4cc;
+    movers.push({type: 'landmark', g: monument, base: monument.position.clone()});
     for (const x of [-2, 0]) {
       b(monument, white, x, -0.2, 0, 1.6, 8.5, 1.7);
       for (let j = 0; j < 12; j++) b(monument, 0x6598ac, x, -3.8 + j * 0.61, 1, 1.4, 0.15, 0.08);
@@ -341,6 +343,21 @@ export function buildWorld(scene, map) {
     }
   }
   enrichWorld(group, map, movers);
+  const farCopy = far.clone(true);
+  group.add(farCopy);
+  layers.push({g: far, start: 0, speed: 0.12, span: 160, edge: 100});
+  layers.push({g: farCopy, start: 80, speed: 0.12, span: 160, edge: 100});
+  // Recycle skyline cells off-screen; reuse all GPU geometry during flight.
+  const terrain = new T.InstancedMesh(
+    new T.BoxGeometry(1, 1, 1),
+    m(map.id === 'amazonia' ? 0x497e51 : 0x70a58a),
+    70,
+  );
+  terrain.position.z = -35;
+  terrain.frustumCulled = false;
+  group.add(terrain);
+  const terrainMatrix = new T.Object3D();
+  movers.push({type: 'terrain', g: terrain});
   // Bake static boxes into material batches; moving objects and parallax layers stay independent.
   const dynamic = new Set(movers.map(a => a.g)),
     layerRoots = new Set([...layers.map(a => a.g), ...groundRoots]);
@@ -349,7 +366,7 @@ export function buildWorld(scene, map) {
     const bins = new Map(),
       inverse = root.matrixWorld.clone().invert();
     root.traverse(o => {
-      if (!o.isMesh || !o.geometry.index || o.material.map) return;
+      if (o.isInstancedMesh || !o.isMesh || !o.geometry.index || o.material.map) return;
       let p = o;
       while (p && p !== root) {
         if (dynamic.has(p) || (layerRoots.has(p) && p !== root)) return;
@@ -398,15 +415,29 @@ export function buildWorld(scene, map) {
     update(t, dt = 0, playing = false, speed = 5.5) {
       if (playing) distance += dt * speed;
       for (const l of layers) {
-        l.g.position.x = ((((l.start - distance * l.speed + 70) % 140) + 140) % 140) - 70;
+        const span = l.span || 140,
+          edge = l.edge || 70;
+        l.g.position.x = ((((l.start - distance * l.speed + edge) % span) + span) % span) - edge;
       }
-      far.position.x = -Math.sin(distance / 180) * 4;
+      for (let i = 0; i < 70; i++) {
+        const travel = i * 2 - distance * 0.2;
+        const cycle = Math.floor((travel + 70) / 140);
+        const x = ((((travel + 70) % 140) + 140) % 140) - 70;
+        const h = 1 + rnd(i + cycle * 71) * (map.id === 'amazonia' ? 7 : 3.5);
+        terrainMatrix.position.set(x, -5 + h / 2, 0);
+        terrainMatrix.scale.set(2.05, h, 2);
+        terrainMatrix.updateMatrix();
+        terrain.setMatrixAt(i, terrainMatrix.matrix);
+      }
+      terrain.instanceMatrix.needsUpdate = true;
       if (calcadao) calcadao.offset.x = (distance * 0.85) / CALCADAO_TILE;
       const sunWarm = (Math.sin(t * 0.018) + 1) * 0.5;
       scene.background.set(map.sky).lerp(new T.Color(0xf2c391), sunWarm * 0.15);
       for (const a of movers) {
         const {g, base, seed} = a;
-        if (a.type === 'bird') {
+        if (a.type === 'landmark') {
+          g.position.x = ((((base.x - distance * 0.24 + 90) % 180) + 180) % 180) - 90;
+        } else if (a.type === 'bird') {
           g.position.x = ((((base.x - t * 0.55 + 40) % 80) + 80) % 80) - 40;
           g.position.y = base.y + Math.sin(t * 1.6 + seed) * 0.5;
           a.wings.forEach((w, i) => (w.rotation.x = Math.sin(t * 8 + seed) * (i ? -0.7 : 0.7)));

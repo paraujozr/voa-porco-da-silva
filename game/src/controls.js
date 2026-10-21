@@ -20,6 +20,12 @@ export function bindControls(game) {
   $('play').onclick = () => game.startFlight();
   $('retry').onclick = () => game.retry();
   $('continue-run').onclick = () => game.continueRun();
+  $('power-button').onclick = () => game.power();
+  for (const button of document.querySelectorAll('[data-flight-mode]'))
+    button.onclick = () => {
+      game.mode = button.dataset.flightMode;
+      game.refreshUI();
+    };
   $('pause').onclick = () => game.pause();
   $('resume').onclick = () => game.resume();
   $('home').onclick = () => game.home();
@@ -53,6 +59,10 @@ export function bindControls(game) {
     if (['Escape', 'KeyP'].includes(e.code)) {
       if (game.state === STATE.PLAYING) game.pause();
       else if (game.state === STATE.PAUSED) game.resume();
+    }
+    if (e.code === 'KeyE' && !e.repeat) {
+      e.preventDefault();
+      game.power();
     }
     if (['Space', 'ArrowUp'].includes(e.code) && game.state === STATE.PLAYING) {
       e.preventDefault();

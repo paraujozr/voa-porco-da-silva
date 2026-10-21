@@ -1,3 +1,4 @@
+import * as legacy from '../core/engine-v1.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
@@ -87,9 +88,9 @@ test('apelido normaliza e rejeita marcação', () => {
 });
 
 // Real physics/collisions: no seeded score or invulnerability.
-test('voo longo atravessa 1.000 canos e o servidor valida o resultado', () => {
+test('partidas anteriores à atualização: voo longo atravessa 1.000 canos e o servidor valida o resultado', () => {
   for (const level of ['easy', 'normal', 'hard']) {
-    const run = createRun(19, level),
+    const run = legacy.createRun(19, level),
       inputs = [];
     let maxGates = 0,
       maxTokens = 0,
@@ -98,7 +99,7 @@ test('voo longo atravessa 1.000 canos e o servidor valida o resultado', () => {
       const target = run.gates.find(g => g.x > -1.6)?.center ?? 1;
       const flap = run.y < target - 0.5 && run.v < 0;
       if (flap) inputs.push(run.tick);
-      events += !!advance(run, flap).sixSeven;
+      events += !!legacy.advance(run, flap).sixSeven;
       maxGates = Math.max(maxGates, run.gates.length);
       maxTokens = Math.max(maxTokens, run.tokens.length);
     }
@@ -108,7 +109,7 @@ test('voo longo atravessa 1.000 canos e o servidor valida o resultado', () => {
     assert.equal(events, 1);
     assert.ok(maxGates < 10);
     assert.ok(maxTokens < 30);
-    const copy = replay({seed: 19, level, inputs, ticks: run.tick});
+    const copy = legacy.replay({seed: 19, level, inputs, ticks: run.tick});
     for (const key of ['passed', 'coins', 'tick', 'dead', 'y']) assert.equal(copy[key], run[key]);
     const saved = credit(freshProfile(), copy);
     assert.equal(saved.ranked[level], 1000);

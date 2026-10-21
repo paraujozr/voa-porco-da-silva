@@ -574,6 +574,17 @@ export function makePig(data) {
     cube(head, 0x513040, 0, 0.68, 0, 0.62, 0.055, 0.12);
     oval(body, 0xb2804e, 0, -0.15, 0.48, 0.21, 0.21, 0.045);
   }
+  if (id === 'queijo') {
+    part(head, v => {
+      v.cube(0, 0.8, 0, 1.2, 0.28, 0.85, 0xffd04c);
+      v.cube(-0.2, 1.03, 0, 0.8, 0.2, 0.65, 0xffd04c);
+      for (const x of [-0.35, 0, 0.35]) v.cube(x, 0.83, 0.44, 0.14, 0.12, 0.05, 0xb78326);
+    });
+    part(body, v => {
+      v.cube(0, -0.12, 0.53, 0.78, 0.78, 0.12, 0xffeed0);
+      v.cube(0, -0.1, 0.62, 0.35, 0.25, 0.05, 0xffc337);
+    });
+  }
   if (id === 'hawk') {
     collar(0x357d4f);
     oval(body, 0xc8d5b1, 0, 0.28, 0.54, 0.15, 0.18, 0.05);

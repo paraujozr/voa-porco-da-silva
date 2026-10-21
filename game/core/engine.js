@@ -1,6 +1,15 @@
+import {
+  STAGES,
+  speedFor,
+  activePower,
+  protectedPower,
+  hitRadius,
+  effectiveGate,
+  activatePower,
+} from './adventure.js';
 // Gates and coins appear this far (world units) ahead of the pig. Wider than any supported
 // screen (21:9 shows ~33 units to the right of the pig), so they never pop in on screen.
-export const SPAWN_X = 34;
+export const SPAWN_X = 56;
 // Keep a bounded replay budget on the server, without ending normal flights near 300 pipes.
 export const SOLO_SECONDS = 60 * 60;
 export const DT = 1 / 120,
@@ -9,8 +18,8 @@ export const DT = 1 / 120,
   CONTINUE_LIMIT = 3;
 export const LEVELS = {
   easy: {speed: 4.5, boost: 0.9, gap: [5.8, 6.7], space: [12, 18], rise: 1.4},
-  normal: {speed: 5.5, boost: 1.3, gap: [4.8, 5.8], space: [10, 16.5], rise: 2.1},
-  hard: {speed: 6.5, boost: 1.5, gap: [4.1, 5.1], space: [8.8, 14.5], rise: 2.5},
+  normal: {speed: 5.8, boost: 1.3, gap: [4.8, 5.8], space: [10, 16.5], rise: 2.1},
+  hard: {speed: 8.2, boost: 1.5, gap: [3.25, 4.05], space: [9, 13], rise: 2.2},
 };
 export const continuePrice = n => 25 * 2 ** n;
 export function rng(seed) {
@@ -20,10 +29,25 @@ export function rng(seed) {
     return n / 4294967296;
   };
 }
-export function createRun(seed = 1, level = 'normal', duel = false) {
-  if (!LEVELS[level]) throw Error('Dificuldade inválida');
+export function createRun(
+  seed = 1,
+  level = 'normal',
+  duel = false,
+  {mapId = 'cipo', skinId = 'mandrake', mode = 'endless'} = {},
+) {
+  if (!Object.hasOwn(LEVELS, level)) throw Error('Dificuldade inválida');
+  if (!Object.hasOwn(STAGES, mapId) || !['campaign', 'endless'].includes(mode))
+    throw Error('Destino ou modo inválido');
   return {
     seed,
+    mapId,
+    skinId,
+    mode,
+    obstacles: [],
+    projectiles: [],
+    shotSerial: 0,
+    powerUntil: 0,
+    powerReady: 0,
     level,
     duel,
     tick: 0,
@@ -59,13 +83,27 @@ function gate(run) {
   run.remaining += space;
   const id = ++run.serial;
   run.gates.push({id, x: SPAWN_X, center, gap, passed: false});
+  const cadence = run.level === 'hard' ? 3 : run.level === 'normal' ? 5 : 8;
+  if (id > 5 && id % cadence === 0) {
+    const phase = r() * Math.PI * 2;
+    const baseY = Math.max(-1.8, Math.min(4.5, center + (r() < 0.5 ? -1.6 : 1.6)));
+    run.obstacles.push({
+      id,
+      x: SPAWN_X + space * 0.5,
+      baseY,
+      phase,
+      y: baseY + Math.sin((run.tick / 120) * 1.4 + phase) * 0.6,
+      kind: STAGES[run.mapId].hazard,
+      radius: 0.48,
+    });
+  }
   for (let i = 0; i < 3; i++)
     run.tokens.push({id: `${id}-${i}`, x: SPAWN_X + 2.4 + i * 0.85, y: center});
 }
-export function collide(y, g) {
+export function collide(y, g, radius = 0.65) {
   const cx = 0.1,
     cy = y + 0.05,
-    r = 0.65;
+    r = radius;
   for (const sign of [-1, 1]) {
     const edge = g.center + (sign * g.gap) / 2,
       lo = sign < 0 ? edge - 30 : edge,
@@ -76,15 +114,15 @@ export function collide(y, g) {
   }
   return false;
 }
-export function advance(run, flap = false) {
+export function advance(run, flap = false, power = false) {
   if (run.dead) return {dead: true};
   const old = run.passed;
+  if (power) activatePower(run);
   if (flap) run.v = 6.8;
   run.v -= 19 * DT;
   run.y += run.v * DT;
   run.tick++;
-  const d = LEVELS[run.level],
-    speed = d.speed + Math.min(run.passed * 0.04, d.boost);
+  const speed = speedFor(run);
   run.distance += speed * DT;
   run.remaining -= speed * DT;
   if (run.remaining <= 0) gate(run);
@@ -100,23 +138,74 @@ export function advance(run, flap = false) {
       run.passed++;
     }
   }
+  const kind = activePower(run);
+  for (const o of run.obstacles) {
+    o.x -= speed * DT;
+    if (kind === 'web') o.phase -= 1.4 * DT;
+    if (kind !== 'web') o.y = o.baseY + Math.sin((run.tick / 120) * 1.4 + o.phase) * 0.6;
+  }
+  for (const shot of run.projectiles) {
+    shot.x += 25 * DT;
+    shot.life--;
+    for (const g of run.gates)
+      if (!g.broken && shot.hits > 0 && Math.abs(g.x - shot.x) < 1.3) {
+        g.broken = true;
+        shot.hits--;
+      }
+    for (const o of run.obstacles)
+      if (!o.broken && shot.hits > 0 && Math.hypot(o.x - shot.x, o.y - shot.y) < 1.1) {
+        o.broken = true;
+        shot.hits--;
+      }
+  }
+  if (['smash', 'wave', 'eat'].includes(kind)) {
+    for (const g of run.gates) if (Math.abs(g.x) < 3.5) g.broken = true;
+    for (const o of run.obstacles) if (Math.abs(o.x) < 4) o.broken = true;
+  }
+  if (protectedPower(run) && run.y < -2.9) {
+    run.y = -2.9;
+    run.v = 5.8;
+  }
   if (run.y < -3.75) {
     run.dead = true;
     run.reason = 'ground';
-  } else if (!run.shield && run.gates.some(g => collide(run.y, g))) {
+  } else if (
+    !run.shield &&
+    !protectedPower(run) &&
+    run.gates.some(g => !g.broken && collide(run.y, effectiveGate(run, g), hitRadius(run)))
+  ) {
     run.dead = true;
     run.reason = 'pipe';
+  } else if (
+    !run.shield &&
+    !protectedPower(run) &&
+    run.obstacles.some(
+      o => !o.broken && Math.hypot(o.x - 0.1, o.y - run.y) < o.radius + hitRadius(run),
+    )
+  ) {
+    run.dead = true;
+    run.reason = 'obstacle';
   } else if (run.tick >= (run.duel ? DUEL_TICKS : MAX_TICKS)) {
     run.dead = true;
     run.reason = 'limit';
   }
   for (const c of run.tokens) {
     c.x -= speed * DT;
-    if (!run.dead && Math.abs(c.x) < 0.9 && Math.abs(c.y - run.y) < 1) {
+    if (
+      !run.dead &&
+      Math.abs(c.x) < (kind === 'magnet' ? 5 : 0.9) &&
+      Math.abs(c.y - run.y) < (kind === 'magnet' ? 8 : 1)
+    ) {
       c.collected = true;
       run.coins++;
     }
   }
+  if (!run.dead && !run.duel && run.mode === 'campaign' && run.passed >= STAGES[run.mapId].goal) {
+    run.dead = true;
+    run.reason = 'complete';
+  }
+  run.obstacles = run.obstacles.filter(o => !o.broken && o.x > -25);
+  run.projectiles = run.projectiles.filter(p => p.hits > 0 && p.life > 0);
   run.tokens = run.tokens.filter(c => !c.collected && c.x > -25);
   run.gates = run.gates.filter(g => g.x > -25);
   const sixSeven = !run.event67 && old < 67 && run.passed >= 67;
@@ -124,7 +213,12 @@ export function advance(run, flap = false) {
   return {dead: run.dead, sixSeven, speed};
 }
 export function revive(run) {
-  if (!run.dead || run.duel || run.reason === 'limit' || run.continues >= CONTINUE_LIMIT)
+  if (
+    !run.dead ||
+    run.duel ||
+    ['limit', 'complete'].includes(run.reason) ||
+    run.continues >= CONTINUE_LIMIT
+  )
     throw Error('Continue indisponível');
   run.continues++;
   run.dead = false;
@@ -132,11 +226,23 @@ export function revive(run) {
   run.y = Math.max(-0.5, Math.min(2, run.gates.find(g => g.x > -1)?.center ?? 1));
   run.v = 5.8;
   run.shield = 180;
+  run.obstacles = run.obstacles.filter(o => Math.abs(o.x) > 5);
   run.gates = run.gates.filter(g => Math.abs(g.x) > 3.5);
   run.tokens = run.tokens.filter(c => Math.abs(c.x) > 3.5);
   return run;
 }
-export function replay({seed, level, duel = false, inputs, ticks, revives = []}) {
+export function replay({
+  seed,
+  level,
+  duel = false,
+  inputs,
+  ticks,
+  revives = [],
+  powers = [],
+  mapId = 'cipo',
+  skinId = 'mandrake',
+  mode = 'endless',
+}) {
   if (
     !Number.isInteger(ticks) ||
     ticks < 0 ||
@@ -152,7 +258,15 @@ export function replay({seed, level, duel = false, inputs, ticks, revives = []})
     if (!Number.isInteger(i) || i < 0 || i >= ticks || i <= prev) throw Error('Impulsos inválidos');
     prev = i;
   }
-  const run = createRun(seed, level, duel);
+  if (!Array.isArray(powers) || powers.length > 180) throw Error('Poderes inválidos');
+  let previousPower = -1;
+  for (const t of powers) {
+    if (!Number.isInteger(t) || t < 0 || t >= ticks || t <= previousPower)
+      throw Error('Poderes inválidos');
+    previousPower = t;
+  }
+  const run = createRun(seed, level, duel, {mapId, skinId, mode});
+  let pc = 0;
   let cursor = 0,
     rc = 0;
   while (run.tick < ticks) {
@@ -161,7 +275,10 @@ export function replay({seed, level, duel = false, inputs, ticks, revives = []})
       revive(run);
       rc++;
     }
-    advance(run, inputs[cursor] === run.tick);
+    const usePower = powers[pc] === run.tick;
+    if (usePower && run.tick < run.powerReady) throw Error('Poder ainda recarregando');
+    advance(run, inputs[cursor] === run.tick, usePower);
+    if (usePower) pc++;
     if (inputs[cursor] === run.tick - 1) cursor++;
   }
   if (rc !== revives.filter(t => t < ticks).length) throw Error('Continue inválido');
@@ -183,6 +300,7 @@ export function freshProfile(name = 'Porco Voador') {
     totalCoins: 0,
     unlocked: [],
     maps: ['cipo'],
+    completed: [],
     best: {},
     ranked: {},
     runs: 0,
@@ -193,8 +311,17 @@ export function credit(profile, run, alreadyPaid = 0, countRun = true) {
   const coins = Math.max(0, run.coins - alreadyPaid),
     distance = run.passed,
     key = `${run.mapId || 'cipo'}:${run.level}`;
+  const completed = [...(profile.completed || [])],
+    maps = [...profile.maps];
+  if (run.reason === 'complete' && run.mode === 'campaign' && !run.duel) {
+    if (!completed.includes(run.mapId)) completed.push(run.mapId);
+    const next = STAGES[run.mapId].next;
+    if (next && !maps.includes(next)) maps.push(next);
+  }
   return {
     ...profile,
+    completed,
+    maps,
     coins: profile.coins + coins,
     totalCoins: (profile.totalCoins || 0) + coins,
     runs: (profile.runs || 0) + (countRun ? 1 : 0),
